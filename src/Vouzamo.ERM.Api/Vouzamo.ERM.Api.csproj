@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vouzamo.ERM.Common\Vouzamo.ERM.Common.csproj" />
+    <ProjectReference Include="..\Vouzamo.ERM.CQRS\Vouzamo.ERM.CQRS.csproj" />
+    <ProjectReference Include="..\Vouzamo.ERM.Providers.Elasticsearch\Vouzamo.ERM.Providers.Elasticsearch.csproj" />
+  </ItemGroup>
+
+</Project>
