@@ -28,7 +28,7 @@ namespace Vouzamo.ERM.Common.Serialization
             {
                 var root = document.RootElement;
 
-                if (document.RootElement.TryGetProperty("Type", out JsonElement typeProperty))
+                if (document.RootElement.TryGetProperty("type", out JsonElement typeProperty))
                 {
                     var typeValue = typeProperty.GetString();
 

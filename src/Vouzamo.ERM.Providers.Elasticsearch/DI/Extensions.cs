@@ -5,6 +5,7 @@ using Nest;
 using System;
 using Vouzamo.ERM.Providers.Elasticsearch.Handlers;
 using Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command;
+using Vouzamo.ERM.Providers.Elasticsearch.Serialization;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.DI
 {
@@ -16,7 +17,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
             {
                 var connectionPool = new SingleNodeConnectionPool(options.Uri);
 
-                var connectionSettings = new ConnectionSettings(connectionPool)
+                var connectionSettings = new ConnectionSettings(connectionPool, (builtin, settings) => new SystemTextJsonSerializer())
                     .DisableDirectStreaming()
                     .PrettyJson()
                     .DefaultIndex("nodes");
