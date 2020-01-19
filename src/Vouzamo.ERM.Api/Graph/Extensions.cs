@@ -6,6 +6,7 @@ using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Vouzamo.ERM.Api.Graph.Types;
+using Vouzamo.ERM.Api.Graph.Types.Input;
 
 namespace Vouzamo.ERM.Api.Graph
 {
@@ -44,6 +45,8 @@ namespace Vouzamo.ERM.Api.Graph
             services.AddSingleton<EdgeTypeGraphType>();
             services.AddSingleton<EdgeGraphType>();
             services.AddSingleton<FieldGraphType>();
+
+            services.AddSingleton<FieldInputType>();
 
             services.AddSingleton<DirectionEnumerationGraphType>();
         }

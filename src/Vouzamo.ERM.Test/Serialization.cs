@@ -9,7 +9,10 @@ namespace Vouzamo.ERM.Test
     [TestClass]
     public class Serialization
     {
-        protected JsonSerializerOptions Options { get; } = new JsonSerializerOptions();
+        protected JsonSerializerOptions Options { get; } = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         public Serialization()
         {

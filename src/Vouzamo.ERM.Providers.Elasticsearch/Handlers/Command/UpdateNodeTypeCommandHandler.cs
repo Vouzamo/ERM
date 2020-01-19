@@ -18,7 +18,10 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
         public async Task<Unit> Handle(UpdateNodeTypeCommand request, CancellationToken cancellationToken)
         {
-            var response = await Client.UpdateAsync<NodeType>(request.NodeType.Id, descriptor => descriptor.Index("node-types").Doc(request.NodeType).DocAsUpsert(), cancellationToken);
+            var response = await Client.IndexAsync(request.NodeType, descriptor => descriptor
+                .Index("node-types")
+                .Id(request.NodeType.Id)
+            , cancellationToken);
 
             if (!response.IsValid)
             {

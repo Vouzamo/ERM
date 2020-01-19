@@ -44,7 +44,7 @@ namespace Vouzamo.ERM.Common.Serialization
 
         public override void Write(Utf8JsonWriter writer, Field value, JsonSerializerOptions options)
         {
-            var serialized = JsonSerializer.Serialize(value, value.GetType()).Trim('"');
+            var serialized = JsonSerializer.Serialize(value, value.GetType(), options).Trim('"');
 
             writer.WriteStartObject();
 
