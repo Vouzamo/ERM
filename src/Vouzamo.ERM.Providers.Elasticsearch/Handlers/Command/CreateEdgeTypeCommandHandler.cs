@@ -1,7 +1,5 @@
 ﻿using MediatR;
 using Nest;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Vouzamo.ERM.Common;
@@ -9,21 +7,21 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 {
-    public class CreateNodeTypeCommandHandler : IRequestHandler<CreateNodeTypeCommand, NodeType>
+    public class CreateEdgeTypeCommandHandler : IRequestHandler<CreateEdgeTypeCommand, EdgeType>
     {
         protected IElasticClient Client { get; }
 
-        public CreateNodeTypeCommandHandler(IElasticClient client)
+        public CreateEdgeTypeCommandHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<NodeType> Handle(CreateNodeTypeCommand request, CancellationToken cancellationToken)
+        public async Task<EdgeType> Handle(CreateEdgeTypeCommand request, CancellationToken cancellationToken)
         {
-            var document = new NodeType(request.Id, request.Name);
+            var document = new EdgeType(request.Id, request.Name);
 
             var response = await Client.IndexAsync(document, descriptor => descriptor
-                .Index("node-types")
+                .Index("edge-types")
                 .Id(document.Id)
             , cancellationToken);
 

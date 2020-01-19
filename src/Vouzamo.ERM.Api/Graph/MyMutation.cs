@@ -14,11 +14,45 @@ namespace Vouzamo.ERM.Api.Graph
         {
             Name = "Mutation";
 
+            FieldAsync<EdgeTypeGraphType>(
+                "createEdgeType",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
+                    new QueryArgument<IdGraphType> { Name = "id" }
+                ),
+                resolve: async context =>
+                {
+                    var name = context.GetArgument<string>("name");
+                    var id = context.GetArgument<Guid?>("id");
+
+                    return await mediator.Send(new CreateEdgeTypeCommand(name, id));
+                }
+            );
+
+            FieldAsync<EdgeGraphType>(
+                "createEdge",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "type" },
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "from" },
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "to" },
+                    new QueryArgument<IdGraphType> { Name = "id" }
+                ),
+                resolve: async context =>
+                {
+                    var type = context.GetArgument<Guid>("type");
+                    var from = context.GetArgument<Guid>("from");
+                    var to = context.GetArgument<Guid>("to");
+                    var id = context.GetArgument<Guid?>("id");
+
+                    return await mediator.Send(new CreateEdgeCommand(type, from, to, id));
+                }
+            );
+
             FieldAsync<NodeTypeGraphType>(
                 "createNodeType",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
-                    new QueryArgument<GuidGraphType> { Name = "id" }
+                    new QueryArgument<IdGraphType> { Name = "id" }
                 ),
                 resolve: async context =>
                 {
@@ -26,6 +60,23 @@ namespace Vouzamo.ERM.Api.Graph
                     var id = context.GetArgument<Guid?>("id");
 
                     return await mediator.Send(new CreateNodeTypeCommand(name, id));
+                }
+            );
+
+            FieldAsync<NodeGraphType>(
+                "createNode",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "type" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
+                    new QueryArgument<IdGraphType> { Name = "id" }
+                ),
+                resolve: async context =>
+                {
+                    var type = context.GetArgument<Guid>("type");
+                    var name = context.GetArgument<string>("name");
+                    var id = context.GetArgument<Guid?>("id");
+
+                    return await mediator.Send(new CreateNodeCommand(type, name, id));
                 }
             );
 

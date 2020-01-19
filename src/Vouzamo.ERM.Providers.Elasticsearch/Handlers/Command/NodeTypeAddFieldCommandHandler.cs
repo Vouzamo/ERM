@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vouzamo.ERM.Common;
@@ -23,6 +24,11 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
             var nodeType = await Mediator.Send(new NodeTypeByIdQuery(request.Id));
 
             Field field = FieldFactory.CreateField(request.Field);
+
+            if (nodeType.Fields.Any(f => f.Key.Equals(field.Key)))
+            {
+                throw new NotSupportedException("field key must be unique within collection.");
+            }
 
             nodeType.Fields.Add(field);
 

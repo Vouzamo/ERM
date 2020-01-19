@@ -1,8 +1,6 @@
 ﻿using GraphQL;
 using GraphQL.Types;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Vouzamo.ERM.Api.Graph.Types.Fields;
 
 namespace Vouzamo.ERM.Api.Graph
 {
@@ -13,6 +11,9 @@ namespace Vouzamo.ERM.Api.Graph
             Query = resolver.Resolve<MyQuery>();
             Mutation = resolver.Resolve<MyMutation>();
             Subscription = resolver.Resolve<MySubscription>();
+
+            RegisterType<StringFieldGraphType>();
+            RegisterType<IntegerFieldGraphType>();
         }
     }
 }

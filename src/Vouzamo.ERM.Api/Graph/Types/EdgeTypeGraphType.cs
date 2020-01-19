@@ -10,7 +10,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
         {
             Field(edgeType => edgeType.Id, type: typeof(IdGraphType));
             Field(edgeType => edgeType.Name);
-            Field<ListGraphType<FieldGraphType>>("fields", resolve: (context) => context.Source.Fields);
+            Field<ListGraphType<FieldInterface>>("fields", resolve: (context) => context.Source.Fields);
 
             // edges
         }

@@ -11,7 +11,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
         {
             Field(nodeType => nodeType.Id, type: typeof(IdGraphType));
             Field(nodeType => nodeType.Name);
-            Field<ListGraphType<FieldGraphType>>("fields", resolve: (context) => context.Source.Fields);
+            Field<ListGraphType<FieldInterface>>("fields", resolve: (context) => context.Source.Fields);
 
             FieldAsync<ListGraphType<NodeGraphType>>(
                 name: "nodes",
