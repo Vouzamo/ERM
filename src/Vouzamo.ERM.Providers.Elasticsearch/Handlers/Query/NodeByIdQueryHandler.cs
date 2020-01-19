@@ -7,20 +7,20 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class GetNodeTypeQueryHandler : IRequestHandler<NodeTypeByIdQuery, NodeType>
+    public class NodeByIdQueryHandler : IRequestHandler<NodeByIdQuery, Node>
     {
         protected IElasticClient Client { get; }
 
-        public GetNodeTypeQueryHandler(IElasticClient client)
+        public NodeByIdQueryHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<NodeType> Handle(NodeTypeByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Node> Handle(NodeByIdQuery request, CancellationToken cancellationToken)
         {
-            var response = await Client.GetAsync<NodeType>(request.Id, selector => selector.Index("node-types"));
+            var response = await Client.GetAsync<Node>(request.Id, selector => selector.Index("nodes"));
 
-            if(!response.IsValid)
+            if (!response.IsValid)
             {
                 // todo: Wrap this in an application exception
                 throw response.OriginalException;

@@ -40,6 +40,7 @@ namespace Vouzamo.ERM.Api.Graph
             services.AddSingleton<MySubscription>();
 
             services.AddSingleton<NodeTypeGraphType>();
+            services.AddSingleton<NodeGraphType>();
             services.AddSingleton<FieldGraphType>();
         }
 
