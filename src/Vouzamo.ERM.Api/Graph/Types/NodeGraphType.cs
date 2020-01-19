@@ -14,8 +14,16 @@ namespace Vouzamo.ERM.Api.Graph.Types
             // Properties
 
             FieldAsync<NodeTypeGraphType>(
-                name: "nodeType",
+                name: "type",
                 resolve: async (context) => await mediator.Send(new NodeTypeByIdQuery(context.Source.Type))
+            );
+
+            FieldAsync<ListGraphType<EdgeGraphType>>(
+                name: "edges",
+                arguments: new QueryArguments(
+                    new QueryArgument<DirectionEnumerationGraphType> { Name = "direction" }
+                ),
+                resolve: async (context) => await mediator.Send(new NodeEdgesQuery(context.Source.Id, context.GetArgument<Direction?>("direction").GetValueOrDefault(Direction.Outbound)))
             );
         }
     }

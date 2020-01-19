@@ -15,14 +15,16 @@ namespace Vouzamo.ERM.Api.Graph
             FieldAsync<NodeTypeGraphType>(
                 name: "nodeType",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }),
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }
+                ),
                 resolve: async (context) => await mediator.Send(new NodeTypeByIdQuery(context.GetArgument<Guid>("id")))
             );
 
             FieldAsync<NodeGraphType>(
                 name: "node",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }),
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }
+                ),
                 resolve: async (context) => await mediator.Send(new NodeByIdQuery(context.GetArgument<Guid>("id")))
             );
         }

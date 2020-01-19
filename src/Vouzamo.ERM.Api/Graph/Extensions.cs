@@ -41,7 +41,11 @@ namespace Vouzamo.ERM.Api.Graph
 
             services.AddSingleton<NodeTypeGraphType>();
             services.AddSingleton<NodeGraphType>();
+            services.AddSingleton<EdgeTypeGraphType>();
+            services.AddSingleton<EdgeGraphType>();
             services.AddSingleton<FieldGraphType>();
+
+            services.AddSingleton<DirectionEnumerationGraphType>();
         }
 
         public static void UseGraph(this IApplicationBuilder app)
