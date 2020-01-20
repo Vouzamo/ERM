@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -57,20 +58,34 @@ namespace Vouzamo.ERM.Common.Serialization
 
                     using (var enumerator = element.EnumerateArray())
                     {
-                        while (enumerator.MoveNext())
+                        foreach (var current in enumerator)
                         {
-                            var json = enumerator.Current.GetRawText();
+                            var json = current.GetRawText();
 
-                            var current = JsonSerializer.Deserialize(json, typeof(object), options);
-
-                            collection.Add(current);
+                            collection.Add(JsonSerializer.Deserialize(json, typeof(object), options));
                         }
+                        
                     }
 
                     return collection;
                 }
 
-                // handle object
+                if (element.ValueKind == JsonValueKind.Object)
+                {
+                    var dictionary = new Dictionary<string, object>();
+
+                    using (var enumerator = element.EnumerateObject())
+                    {
+                        foreach (var current in enumerator)
+                        {
+                            var json = current.Value.GetRawText();
+
+                            dictionary.Add(current.Name, JsonSerializer.Deserialize(json, typeof(object), options));
+                        }
+                    }
+
+                    return dictionary;
+                }
 
                 return element;
             }
