@@ -94,6 +94,19 @@ namespace Vouzamo.ERM.Api.Graph
                     return await mediator.Send(new NodeTypeAddFieldCommand(id, field));
                 }
             );
+
+            Field<JsonGraphType>(
+                "rawTest",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<JsonGraphType>> { Name = "raw" }
+                ),
+                resolve: context =>
+                {
+                    var raw = context.GetArgument<object>("raw");
+
+                    return raw;
+                }
+            );
         }
     }
 }

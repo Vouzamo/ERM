@@ -41,6 +41,8 @@ namespace Vouzamo.ERM.Api.Graph
             services.AddSingleton<MyMutation>();
             services.AddSingleton<MySubscription>();
 
+            services.AddSingleton<JsonGraphType>();
+
             services.AddSingleton<NodeTypeGraphType>();
             services.AddSingleton<NodeGraphType>();
             services.AddSingleton<EdgeTypeGraphType>();

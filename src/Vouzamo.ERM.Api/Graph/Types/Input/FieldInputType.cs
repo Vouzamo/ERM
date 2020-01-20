@@ -1,4 +1,7 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Language.AST;
+using GraphQL.Types;
+using System.Collections.Generic;
 using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Api.Graph.Types.Input
@@ -23,6 +26,68 @@ namespace Vouzamo.ERM.Api.Graph.Types.Input
 
             Field(field => field.MinValue, true);
             Field(field => field.MaxValue, true);
+        }
+    }
+
+    public class JsonGraphTypeConverter : IAstFromValueConverter
+    {
+        public bool Matches(object value, IGraphType type)
+        {
+            return type.Name == "Json";
+        }
+
+        public IValue Convert(object value, IGraphType type)
+        {
+            return new JsonGraphValue(value as Dictionary<string, object>);
+        }
+    }
+
+    public class JsonGraphValue : ValueNode<Dictionary<string, object>>
+    {
+        public JsonGraphValue(Dictionary<string, object> value)
+        {
+            Value = value;
+        }
+
+        protected override bool Equals(ValueNode<Dictionary<string, object>> node)
+        {
+            return Value == node.Value;
+        }
+    }
+
+    public class JsonGraphType : ScalarGraphType
+    {
+        public JsonGraphType()
+        {
+            Name = "Json";
+        }
+
+        public override object Serialize(object value)
+        {
+            return ParseValue(value);
+        }
+
+        public override object ParseValue(object value)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+
+            return value;
+        }
+
+        public override object ParseLiteral(IValue value)
+        {
+            if (value is JsonGraphValue)
+            {
+                return value.Value;
+            }
+            else
+            {
+                var tv = value as JsonGraphTypeConverter;
+                return tv?.GetValue();
+            }
         }
     }
 }
