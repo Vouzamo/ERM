@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -48,7 +49,30 @@ namespace Vouzamo.ERM.Common.Serialization
             // Use JsonElement as fallback.
             using (JsonDocument document = JsonDocument.ParseValue(ref reader))
             {
-                return document.RootElement.Clone();
+                var element = document.RootElement.Clone();
+
+                if(element.ValueKind == JsonValueKind.Array)
+                {
+                    var collection = new List<object>();
+
+                    using (var enumerator = element.EnumerateArray())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            var json = enumerator.Current.GetRawText();
+
+                            var current = JsonSerializer.Deserialize(json, typeof(object), options);
+
+                            collection.Add(current);
+                        }
+                    }
+
+                    return collection;
+                }
+
+                // handle object
+
+                return element;
             }
         }
 

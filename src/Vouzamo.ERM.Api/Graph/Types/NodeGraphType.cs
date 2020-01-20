@@ -1,5 +1,6 @@
 ﻿using GraphQL.Types;
 using MediatR;
+using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.CQRS;
 
@@ -11,7 +12,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
         {
             Field(node => node.Id, type: typeof(IdGraphType));
             Field(node => node.Name);
-            // Properties
+            Field<JsonGraphType>("properties", resolve: context => context.Source.Properties);
 
             FieldAsync<NodeTypeGraphType>(
                 name: "type",

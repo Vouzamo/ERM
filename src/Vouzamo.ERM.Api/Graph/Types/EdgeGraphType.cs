@@ -1,5 +1,6 @@
 ﻿using GraphQL.Types;
 using MediatR;
+using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.CQRS;
 
@@ -10,8 +11,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
         public EdgeGraphType(IMediator mediator)
         {
             Field(edge => edge.Id, type: typeof(IdGraphType));
-
-            // Properties
+            Field<JsonGraphType>("properties", resolve: context => context.Source.Properties);
 
             FieldAsync<EdgeTypeGraphType>(
                 name: "type",
