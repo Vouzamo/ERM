@@ -1,5 +1,7 @@
-﻿using GraphQL.Types;
+﻿using GraphQL.DataLoader;
+using GraphQL.Types;
 using MediatR;
+using System;
 using System.Linq;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
@@ -9,7 +11,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
 {
     public class NodeGraphType : ObjectGraphType<Node>
     {
-        public NodeGraphType(IMediator mediator)
+        public NodeGraphType(IMediator mediator, IDataLoaderContextAccessor accessor)
         {
             Field(node => node.Id, type: typeof(IdGraphType));
             Field(node => node.Name);
@@ -17,7 +19,14 @@ namespace Vouzamo.ERM.Api.Graph.Types
 
             FieldAsync<NodeTypeGraphType>(
                 name: "type",
-                resolve: async (context) => await mediator.Send(new NodeTypeByIdQuery(context.Source.Type))
+                resolve: async (context) => {
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
+                    {
+                        return await mediator.Send(new NodesByIdQuery(ids));
+                    });
+
+                    return await loader.LoadAsync(context.Source.Type);
+                }
             );
 
             FieldAsync<ListGraphType<EdgeTraversalGraphType>>(
@@ -28,7 +37,12 @@ namespace Vouzamo.ERM.Api.Graph.Types
                 resolve: async (context) => {
                     var direction = context.GetArgument<Direction?>("direction").GetValueOrDefault(Direction.Outbound);
 
-                    var edges = await mediator.Send(new NodeEdgesQuery(context.Source.Id, direction));
+                    var loader = accessor.Context.GetOrAddCollectionBatchLoader<Guid, Edge>("GetEdgesByNodeId", async (ids, cancellationToken) =>
+                    {
+                        return await mediator.Send(new NodeEdgesByNodesQuery(ids, direction), cancellationToken);
+                    });
+
+                    var edges = await loader.LoadAsync(context.Source.Id);
 
                     var edgeTraversals = edges.Select(edge => new EdgeTraversal(edge.Id, edge.Type, direction.Equals(Direction.Outbound) ? edge.To : edge.From)).ToList();
 

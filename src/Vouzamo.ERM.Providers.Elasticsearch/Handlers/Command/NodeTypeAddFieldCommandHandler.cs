@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,12 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
         public async Task<NodeType> Handle(NodeTypeAddFieldCommand request, CancellationToken cancellationToken)
         {
-            var nodeType = await Mediator.Send(new NodeTypeByIdQuery(request.Id));
+            var nodeTypes = await Mediator.Send(new NodeTypesByIdQuery(new List<Guid> { request.Id }));
+
+            if(!nodeTypes.TryGetValue(request.Id, out var nodeType))
+            {
+                throw new KeyNotFoundException($"Node '{request.Id}' not found.");
+            }
 
             Field field = FieldFactory.CreateField(request.Field);
 

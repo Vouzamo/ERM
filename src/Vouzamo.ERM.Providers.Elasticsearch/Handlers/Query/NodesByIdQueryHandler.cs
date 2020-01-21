@@ -10,35 +10,36 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class NodesByNodeTypesQueryHandler : IRequestHandler<NodesByNodeTypesQuery, ILookup<Guid, Node>>
+    public class NodesByIdQueryHandler : IRequestHandler<NodesByIdQuery, IDictionary<Guid, Node>>
     {
         protected IElasticClient Client { get; }
 
-        public NodesByNodeTypesQueryHandler(IElasticClient client)
+        public NodesByIdQueryHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<ILookup<Guid, Node>> Handle(NodesByNodeTypesQuery request, CancellationToken cancellationToken)
+        public async Task<IDictionary<Guid, Node>> Handle(NodesByIdQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<Node>(descriptor => descriptor
                 .Index("nodes")
                 .Query(q => q
                     .Terms(t => t
-                        .Field(f => f.Type.Suffix("keyword"))
-                        .Terms(request.NodeTypes)
+                        .Field(f => f.Id.Suffix("keyword"))
+                        .Terms(request.Ids)
                     )
                 )
-                .Skip(request.Skip)
-                .Size(request.Take)
+                .Size(10000),
+                cancellationToken
             );
 
             if (!response.IsValid)
             {
+                // todo: Wrap this in an application exception
                 throw response.OriginalException;
             }
 
-            return response.Documents.ToLookup(node => node.Type);
+            return response.Documents.ToDictionary(doc => doc.Id);
         }
     }
 }

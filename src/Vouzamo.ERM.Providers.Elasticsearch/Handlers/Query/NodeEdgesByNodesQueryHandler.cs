@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Nest;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,25 +10,26 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class NodeEdgesQueryHandler : IRequestHandler<NodeEdgesQuery, List<Edge>>
+    public class NodeEdgesByNodesQueryHandler : IRequestHandler<NodeEdgesByNodesQuery, ILookup<Guid, Edge>>
     {
         protected IElasticClient Client { get; }
 
-        public NodeEdgesQueryHandler(IElasticClient client)
+        public NodeEdgesByNodesQueryHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<List<Edge>> Handle(NodeEdgesQuery request, CancellationToken cancellationToken)
+        public async Task<ILookup<Guid, Edge>> Handle(NodeEdgesByNodesQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<Edge>(descriptor => descriptor
                 .Index("edges")
                 .Query(q => q
-                    .Term(t => t
+                    .Terms(t => t
                         .Field(request.Direction.Equals(Direction.Outbound) ? "from.keyword" : "to.keyword")
-                        .Value(request.Node)
+                        .Terms(request.Nodes)
                     )
-                )
+                ),
+                cancellationToken
             );
 
             if (!response.IsValid)
@@ -35,7 +37,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
                 throw response.OriginalException;
             }
 
-            return response.Documents.ToList();
+            return request.Direction.Equals(Direction.Outbound) ? response.Documents.ToLookup(node => node.From) : response.Documents.ToLookup(node => node.To);
         }
     }
 }

@@ -1,19 +1,20 @@
 ﻿using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Vouzamo.ERM.Common;
 
 namespace Vouzamo.ERM.CQRS
 {
-    public class NodesByNodeTypeQuery : IRequest<List<Node>>
+    public class NodesByNodeTypesQuery : IRequest<ILookup<Guid, Node>>
     {
-        public Guid NodeType { get; }
+        public IEnumerable<Guid> NodeTypes { get; }
         public int Skip { get; }
         public int Take { get; }
 
-        public NodesByNodeTypeQuery(Guid nodeType, int take, int skip = 0)
+        public NodesByNodeTypesQuery(IEnumerable<Guid> nodeTypes, int take, int skip = 0)
         {
-            NodeType = nodeType;
+            NodeTypes = nodeTypes;
             Take = Math.Max(1, take);
             Skip = Math.Max(0, skip);
         }

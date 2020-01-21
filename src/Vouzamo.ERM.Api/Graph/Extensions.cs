@@ -1,4 +1,5 @@
 ﻿using GraphQL;
+using GraphQL.DataLoader;
 using GraphQL.Http;
 using GraphQL.Server;
 using GraphQL.Server.Ui.GraphiQL;
@@ -28,12 +29,9 @@ namespace Vouzamo.ERM.Api.Graph
             {
                 options.EnableMetrics = true;
                 options.ExposeExceptions = true;
-            }).AddWebSockets();
-
-            services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
-            services.AddSingleton<IDocumentWriter, DocumentWriter>();
-
-            services.AddSingleton<GuidGraphType>();
+            }).AddWebSockets()
+              .AddDataLoader()
+              .AddGraphTypes();
 
             services.AddSingleton<MySchema>();
 

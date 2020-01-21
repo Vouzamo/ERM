@@ -28,9 +28,14 @@ namespace Vouzamo.ERM.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id, CancellationToken cancellationToken)
         {
-            var response = await Mediator.Send(new NodeTypeByIdQuery(id), cancellationToken);
+            var response = await Mediator.Send(new NodeTypesByIdQuery(new List<Guid> { id }), cancellationToken);
 
-            return Ok(response);
+            if(response.TryGetValue(id, out var nodeType))
+            {
+                return Ok(nodeType);
+            }
+
+            return NotFound();
         }
 
         [HttpPut("{id}")]
