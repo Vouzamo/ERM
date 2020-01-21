@@ -47,6 +47,7 @@ namespace Vouzamo.ERM.Api.Graph
             services.AddSingleton<NodeGraphType>();
             services.AddSingleton<EdgeTypeGraphType>();
             services.AddSingleton<EdgeGraphType>();
+            services.AddSingleton<EdgeTraversalGraphType>();
             services.AddSingleton<FieldInterface>();
             services.AddSingleton<StringFieldGraphType>();
             services.AddSingleton<IntegerFieldGraphType>();
