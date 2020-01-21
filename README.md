@@ -22,4 +22,10 @@ Lets use an example to explain how to produce a data model:
 
 Using Graph*i*QL, run the following mutation:
 
-<script src="https://gist.github.com/Vouzamo/816f71c723f403534b49fc5d593beb4b.js"></script>
+```javascript
+mutation CreateHumanNodeType {
+  createNodeType(name: "Human") {
+    id
+  }
+}
+```
