@@ -21,5 +21,5 @@ namespace Vouzamo.ERM.Common
             Type = type;
             Name = name;
         }
-}
+    }
 }
