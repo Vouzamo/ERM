@@ -11,3 +11,7 @@ Graph-based data model to manage entities (nodes) and their relationships (edges
 1. Run elasticsearch locally (using http://localhost:9200) or change Vouzamo.ERM.Api > Startup.js for alternative options / providers.
 2. Build & run the Vouzamo.ERM.Api project.
 3. Use GraphiQL (/graphiql) to interact with GraphQL.
+
+## Getting Started
+
+![alt text](docs/graph-concept.png)
