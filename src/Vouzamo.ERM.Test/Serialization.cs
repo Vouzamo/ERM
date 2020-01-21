@@ -23,8 +23,8 @@ namespace Vouzamo.ERM.Test
         [TestMethod]
         public void NodeType()
         {
-            var original = new NodeType(Guid.NewGuid(), "Node Type");
-            original.Fields.Add(new StringField("name", "Name"));
+            var original = new NodeType(Guid.NewGuid(), "Car");
+            original.Fields.Add(new StringField("manufacturer", "Manufacturer"));
 
             var json = JsonSerializer.Serialize(original, Options);
             var deserialized = JsonSerializer.Deserialize<NodeType>(json, Options);
