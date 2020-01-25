@@ -9,11 +9,12 @@ namespace Vouzamo.ERM.Api.Graph.Types
         {
             Name = "Field";
 
+            Field(field => field.Type);
             Field(field => field.Key);
             Field(field => field.Name);
             Field(field => field.Mandatory);
             Field(field => field.Enumerable);
-            Field(field => field.Type);
+            Field(field => field.Localizable);
         }
     }
 }

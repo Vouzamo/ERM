@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.Json;
+using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Common.Factories
@@ -7,23 +9,17 @@ namespace Vouzamo.ERM.Common.Factories
     {
         public static Field CreateField(FieldDTO field)
         {
-            switch (field.Type)
+            var options = new JsonSerializerOptions()
             {
-                case "string":
-                    return new StringField(field.Key, field.Name, field.Mandatory, field.Enumerable)
-                    {
-                        MinLength = field.MinLength,
-                        MaxLength = field.MaxLength
-                    };
-                case "int":
-                    return new IntegerField(field.Key, field.Name, field.Mandatory, field.Enumerable)
-                    {
-                        MinValue = field.MinValue,
-                        MaxValue = field.MaxValue
-                    };
-                default:
-                    throw new ArgumentException("Field must be of a known type", nameof(field.Type));
-            }
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+
+            options.Converters.Add(new ObjectToPrimitiveConverter());
+            options.Converters.Add(new FieldConverter());
+
+            var json = JsonSerializer.Serialize(field, options);
+
+            return JsonSerializer.Deserialize<Field>(json, options);
         }
     }
 }

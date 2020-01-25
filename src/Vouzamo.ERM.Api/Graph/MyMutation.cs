@@ -1,8 +1,11 @@
 ﻿using GraphQL.Types;
 using MediatR;
 using System;
+using System.Collections.Generic;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Input;
+using Vouzamo.ERM.Common;
+using Vouzamo.ERM.Common.Extensions;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.DTOs;
 
@@ -95,16 +98,57 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            Field<JsonGraphType>(
-                "rawTest",
+            FieldAsync<NodeGraphType>(
+                "nodeProperties",
                 arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<JsonGraphType>> { Name = "raw" }
+                    new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "node" },
+                    new QueryArgument<StringGraphType> { Name = "localization" },
+                    new QueryArgument<NonNullGraphType<JsonGraphType>> { Name = "properties" }
                 ),
-                resolve: context =>
+                resolve: async context =>
                 {
-                    var raw = context.GetArgument<object>("raw");
+                    var id = context.GetArgument<Guid>("node");
+                    var localization = context.GetArgument("localization", "default");
+                    var properties = context.GetArgument<Dictionary<string, object>>("properties");
 
-                    return raw;
+                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
+
+                    var nodes = await mediator.Send(new NodesByIdQuery(new List<Guid> { id }));
+
+                    if(nodes.TryGetValue(id, out var node))
+                    {
+                        var nodeTypes = await mediator.Send(new NodeTypesByIdQuery(new List<Guid> { node.Type }));
+
+                        if(nodeTypes.TryGetValue(node.Type, out var nodeType))
+                        {
+                            var localizationChain = localizationHierarchy.FindDependencyChain(localization);
+
+                            var editors = nodeType.Fields.AsEditors(node.Properties, localizationChain);
+
+                            foreach(var editor in editors)
+                            {
+                                var key = editor.Field.Key;
+
+                                if (!node.Properties.ContainsKey(key))
+                                {
+                                    node.Properties.Add(key, new LocalizedValue());
+                                }
+
+                                if (!editor.ReadOnly && properties.ContainsKey(key))
+                                {
+                                    node.Properties[key][localization] = properties[key];
+                                }
+                                else
+                                {
+                                    node.Properties[key].Remove(localization);
+                                }
+                            }
+                        }
+                    }
+
+                    await mediator.Send(new UpdateNodeCommand(node));
+
+                    return node;
                 }
             );
         }

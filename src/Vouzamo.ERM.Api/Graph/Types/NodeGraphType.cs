@@ -2,9 +2,11 @@
 using GraphQL.Types;
 using MediatR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
+using Vouzamo.ERM.Common.Extensions;
 using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Graph.Types
@@ -15,14 +17,59 @@ namespace Vouzamo.ERM.Api.Graph.Types
         {
             Field(node => node.Id, type: typeof(IdGraphType));
             Field(node => node.Name);
-            Field<JsonGraphType>("properties", resolve: context => context.Source.Properties);
+
+            FieldAsync<JsonGraphType>(
+                "properties",
+                arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType> { Name = "localization" }
+                ),
+                resolve: async context => {
+                    var localization = context.GetArgument("localization", "default");
+
+                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
+                    var localizationChain = localizationHierarchy.FindDependencyChain(localization);
+
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    {
+                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                    });
+
+                    var type = await loader.LoadAsync(context.Source.Type);
+
+                    var editors = type.Fields.AsEditors(context.Source.Properties, localizationChain);
+
+                    return editors.AsValues();
+                }
+            );
+
+            FieldAsync<JsonGraphType>(
+                "editor",
+                arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType> { Name = "localization" }
+                ),
+                resolve: async context => {
+                    var localization = context.GetArgument("localization", "default");
+
+                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
+                    var localizationChain = localizationHierarchy.FindDependencyChain(localization);
+
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    {
+                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                    });
+
+                    var type = await loader.LoadAsync(context.Source.Type);
+
+                    return type.Fields.AsEditors(context.Source.Properties, localizationChain);
+                }
+            );
 
             FieldAsync<NodeTypeGraphType>(
-                name: "type",
+                "type",
                 resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByIdQuery(ids));
+                        return await mediator.Send(new NodeTypesByIdQuery(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.Type);

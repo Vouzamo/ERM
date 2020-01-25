@@ -6,24 +6,29 @@ namespace Vouzamo.ERM.Common
 {
     public abstract class Field : IEquatable<Field>
     {
+        public abstract string Type { get; }
+
         public string Key { get; set; }
         public string Name { get; set; }
         public bool Mandatory { get; set; }
         public bool Enumerable { get; set; }
-        public abstract string Type { get; }
+        public bool Localizable { get; set; }
+        
 
         protected Field()
         {
             Mandatory = false;
             Enumerable = false;
+            Localizable = true;
         }
 
-        public Field(string key, string name, bool mandatory = false, bool enumerable = false) : this()
+        public Field(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = false) : this()
         {
             Key = key;
             Name = name;
             Mandatory = mandatory;
             Enumerable = enumerable;
+            Localizable = localizable;
         }
 
         public abstract bool TryBuildValue(object raw, out object value);
@@ -45,6 +50,7 @@ namespace Vouzamo.ERM.Common
                    Name.Equals(other.Name) &&
                    Mandatory.Equals(other.Mandatory) &&
                    Enumerable.Equals(other.Enumerable) &&
+                   Localizable.Equals(other.Localizable) &&
                    Type.Equals(other.Type);
 
         }
@@ -73,7 +79,7 @@ namespace Vouzamo.ERM.Common
 
         }
 
-        public Field(string key, string name, bool mandatory = false, bool enumerable = false) : base(key, name, mandatory, enumerable)
+        public Field(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = true) : base(key, name, mandatory, enumerable, localizable)
         {
 
         }

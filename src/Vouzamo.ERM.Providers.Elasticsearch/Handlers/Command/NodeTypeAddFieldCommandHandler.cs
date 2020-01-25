@@ -31,12 +31,16 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
             Field field = FieldFactory.CreateField(request.Field);
 
-            if (nodeType.Fields.Any(f => f.Key.Equals(field.Key)))
-            {
-                throw new NotSupportedException("field key must be unique within collection.");
-            }
+            var existingField = nodeType.Fields.FirstOrDefault(f => f.Key.Equals(field.Key));
 
-            nodeType.Fields.Add(field);
+            if (existingField != default)
+            {
+                nodeType.Fields[nodeType.Fields.IndexOf(existingField)] = field;
+            }
+            else
+            {
+                nodeType.Fields.Add(field);
+            }
 
             await Mediator.Send(new UpdateNodeTypeCommand(nodeType));
 
