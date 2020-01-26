@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
+using System;
 using System.Text;
 using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command;
@@ -20,19 +21,66 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
                 var jsonSerializer = serviceCollection.GetService<IJsonSerializer>();
 
                 var connectionSettings = new ConnectionSettings(connectionPool, (builtin, settings) => new CustomSerializer(jsonSerializer))
-                    .DisableDirectStreaming()
-                    .PrettyJson()
-                    .OnRequestCompleted(handler =>
-                    {
-                        var request = Encoding.UTF8.GetString(handler.RequestBodyInBytes);
-                        var response = Encoding.UTF8.GetString(handler.ResponseBodyInBytes);
-                    });
+                .DefaultMappingFor<Common.Node>(mapping => mapping
+                    .IndexName(options.NodesIndex)
+                    .IdProperty(node => node.Id)
+                )
+                .DefaultMappingFor<Common.NodeType>(mapping => mapping
+                    .IndexName(options.NodeTypesIndex)
+                    .IdProperty(nodeType => nodeType.Id)
+                )
+                .DefaultMappingFor<Common.Edge>(mapping => mapping
+                    .IndexName(options.EdgesIndex)
+                    .IdProperty(edge => edge.Id)
+                )
+                .DefaultMappingFor<Common.EdgeType>(mapping => mapping
+                    .IndexName(options.EdgeTypesIndex)
+                    .IdProperty(edgeType => edgeType.Id)
+                );
 
+                var client = new ElasticClient(connectionSettings);
 
-                return new ElasticClient(connectionSettings);
+                ConfigureClient(client, options);
+
+                return client;
             });
 
             services.AddMediatR(typeof(CreateNodeTypeCommandHandler));
+        }
+
+        private static void ConfigureClient(IElasticClient client, ElasticsearchOptions options)
+        {
+            var nodesExists = client.Indices.Exists(options.NodesIndex);
+
+            if(!nodesExists.Exists)
+            {
+                var nodesCreate = client.Indices.Create(options.NodesIndex, create => create
+                    .Map<Common.Node>(m => m
+                        .AutoMap()
+                        .Properties(properties => properties
+                            .Flattened(flattened => flattened
+                                .Name(node => node.Properties)
+                            )
+                        )
+                    )
+                );
+            }
+
+            var edgesExists = client.Indices.Exists(options.EdgesIndex);
+
+            if (!edgesExists.Exists)
+            {
+                var edgesCreate = client.Indices.Create(options.EdgesIndex, create => create
+                    .Map<Common.Edge>(m => m
+                        .AutoMap()
+                        .Properties(properties => properties
+                            .Flattened(flattened => flattened
+                                .Name(edge => edge.Properties)
+                            )
+                        )
+                    )
+                );
+            }
         }
     }
 }

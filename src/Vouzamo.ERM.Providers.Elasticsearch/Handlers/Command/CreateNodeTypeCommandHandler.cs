@@ -22,10 +22,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
         {
             var document = new NodeType(request.Id, request.Name);
 
-            var response = await Client.IndexAsync(document, descriptor => descriptor
-                .Index("node-types")
-                .Id(document.Id)
-            , cancellationToken);
+            var response = await Client.IndexAsync(document, descriptor => descriptor, cancellationToken);
 
             if (!response.IsValid)
             {

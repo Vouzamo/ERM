@@ -22,7 +22,6 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
         public async Task<IDictionary<Guid, EdgeType>> Handle(EdgeTypesByIdQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<EdgeType>(descriptor => descriptor
-                .Index("edge-types")
                 .Query(q => q
                     .Terms(t => t
                         .Field(f => f.Id.Suffix("keyword"))

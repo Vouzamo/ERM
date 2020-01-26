@@ -17,10 +17,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
         public async Task<Unit> Handle(UpdateNodeCommand request, CancellationToken cancellationToken)
         {
-            var response = await Client.IndexAsync(request.Node, descriptor => descriptor
-                .Index("nodes")
-                .Id(request.Node.Id)
-            , cancellationToken);
+            var response = await Client.IndexAsync(request.Node, descriptor => descriptor, cancellationToken);
 
             if (!response.IsValid)
             {

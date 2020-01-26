@@ -21,17 +21,9 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 
         public async Task<IDictionary<Guid, Node>> Handle(NodesByIdQuery request, CancellationToken cancellationToken)
         {
-            var response = await Client.SearchAsync<Node>(descriptor => descriptor
-                .Index("nodes")
-                .Query(q => q
-                    .Terms(t => t
-                        .Field(f => f.Id.Suffix("keyword"))
-                        .Terms(request.Ids)
-                    )
-                )
-                .Size(10000),
-                cancellationToken
-            );
+            var ids = request.Ids.Select(id => id.ToString());
+
+            var response = await Client.MultiGetAsync(m => m.GetMany<Node>(ids), cancellationToken);
 
             if (!response.IsValid)
             {
@@ -39,7 +31,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
                 throw response.OriginalException;
             }
 
-            return response.Documents.ToDictionary(doc => doc.Id);
+            return response.SourceMany<Node>(ids).ToDictionary(doc => doc.Id);
         }
     }
 }

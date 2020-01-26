@@ -22,7 +22,6 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
         public async Task<ILookup<Guid, Edge>> Handle(NodeEdgesByNodesQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<Edge>(descriptor => descriptor
-                .Index("edges")
                 .Query(q => q
                     .Terms(t => t
                         .Field(request.Direction.Equals(Direction.Outbound) ? "from.keyword" : "to.keyword")
