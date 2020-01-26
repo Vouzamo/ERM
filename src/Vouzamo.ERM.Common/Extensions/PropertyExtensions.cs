@@ -37,12 +37,9 @@ namespace Vouzamo.ERM.Common.Extensions
 
             foreach(var field in fields)
             {
-                var editor = new PropertyEditor(field, localization);
+                var localizedValue = properties.ValueOrDefault(field.Key, new LocalizedValue());
 
-                if (properties.TryGetValue(field.Key, out var localizedValue))
-                {
-                    editor.LocalizedValue = localizedValue;
-                }
+                var editor = new PropertyEditor(field, localization, localizedValue);
 
                 if(field.Localizable && fallbacks.TryGetValue(field.Key, out var fallback))
                 {

@@ -1,18 +1,16 @@
 ﻿using GraphQL;
-using GraphQL.DataLoader;
-using GraphQL.Http;
 using GraphQL.Server;
 using GraphQL.Server.Ui.GraphiQL;
-using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 
-namespace Vouzamo.ERM.Api.Graph
+namespace Vouzamo.ERM.Api.Extensions
 {
-    public static class Extensions
+    public static class GraphExtensions
     {
         public static void AddGraph(this IServiceCollection services)
         {

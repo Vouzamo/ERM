@@ -2,8 +2,7 @@
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using System.Collections.Generic;
-using System.Text.Json;
-using Vouzamo.ERM.Common.Serialization;
+using Vouzamo.ERM.Common.Converters;
 
 namespace Vouzamo.ERM.Api.Graph.Types
 {
@@ -35,24 +34,25 @@ namespace Vouzamo.ERM.Api.Graph.Types
 
     public class JsonGraphType : ScalarGraphType
     {
-        public JsonGraphType()
+        protected IConverter Converter { get; }
+
+        public JsonGraphType(IConverter converter)
         {
+            Converter = converter;
+
             Name = "Json";
         }
 
+        /// <summary>
+        /// Ideally we should just return the value as-is but since we can't use our System.Text.Json (and options) in GraphQL we would otherwise get ProperCasePropertyNames
+        /// </summary>
+        /// <param name="value">The object to be serialized by GraphQL</param>
+        /// <returns></returns>
         public override object Serialize(object value)
         {
-            var options = new JsonSerializerOptions()
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            var converted = Converter.Convert<object, object>(value);
 
-            options.Converters.Add(new ObjectToPrimitiveConverter());
-            options.Converters.Add(new FieldConverter());
-
-            var json = JsonSerializer.Serialize<object>(value, options);
-
-            return JsonSerializer.Deserialize<object>(json, options);
+            return converted;
         }
 
         public override object ParseValue(object value)

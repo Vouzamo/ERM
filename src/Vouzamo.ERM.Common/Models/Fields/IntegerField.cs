@@ -1,4 +1,7 @@
-﻿namespace Vouzamo.ERM.Common
+﻿using Vouzamo.ERM.Common.Models;
+using Vouzamo.ERM.Common.Models.Validation;
+
+namespace Vouzamo.ERM.Common
 {
     public class IntegerField : Field<int>
     {
@@ -16,5 +19,29 @@
         {
 
         }
-}
+
+        public override IValidationResult ValidateValue(int value)
+        {
+            var result = base.ValidateValue(value);
+
+            if(value != default)
+            {
+                if (value < MinValue)
+                {
+                    result.Messages.Add(new PropertyErrorValidationMessage(Key, $"Value must be no less than {MinValue}"));
+
+                    result = new ValueValidationResult(false, result.Messages);
+                }
+
+                if (value > MaxValue)
+                {
+                    result.Messages.Add(new PropertyErrorValidationMessage(Key, $"Value must be no greater than {MaxValue}"));
+
+                    result = new ValueValidationResult(false, result.Messages);
+                }
+            }
+
+            return result;
+        }
+    }
 }

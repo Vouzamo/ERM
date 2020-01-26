@@ -2,8 +2,8 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
-using System;
-using Vouzamo.ERM.Providers.Elasticsearch.Handlers;
+using System.Text;
+using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command;
 using Vouzamo.ERM.Providers.Elasticsearch.Serialization;
 
@@ -17,10 +17,17 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
             {
                 var connectionPool = new SingleNodeConnectionPool(options.Uri);
 
-                var connectionSettings = new ConnectionSettings(connectionPool, (builtin, settings) => new SystemTextJsonSerializer())
+                var jsonSerializer = serviceCollection.GetService<IJsonSerializer>();
+
+                var connectionSettings = new ConnectionSettings(connectionPool, (builtin, settings) => new CustomSerializer(jsonSerializer))
                     .DisableDirectStreaming()
                     .PrettyJson()
-                    .DefaultIndex("nodes");
+                    .OnRequestCompleted(handler =>
+                    {
+                        var request = Encoding.UTF8.GetString(handler.RequestBodyInBytes);
+                        var response = Encoding.UTF8.GetString(handler.ResponseBodyInBytes);
+                    });
+
 
                 return new ElasticClient(connectionSettings);
             });

@@ -5,19 +5,21 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vouzamo.ERM.Common;
-using Vouzamo.ERM.Common.Factories;
+using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.CQRS;
-using Field = Vouzamo.ERM.Common.Field;
+using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 {
     public class NodeTypeAddFieldCommandHandler : IRequestHandler<NodeTypeAddFieldCommand, NodeType>
     {
         protected IMediator Mediator { get; }
+        protected IConverter Converter { get; }
 
-        public NodeTypeAddFieldCommandHandler(IMediator mediator)
+        public NodeTypeAddFieldCommandHandler(IMediator mediator, IConverter converter)
         {
             Mediator = mediator;
+            Converter = converter;
         }
 
         public async Task<NodeType> Handle(NodeTypeAddFieldCommand request, CancellationToken cancellationToken)
@@ -29,7 +31,9 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
                 throw new KeyNotFoundException($"Node '{request.Id}' not found.");
             }
 
-            Field field = FieldFactory.CreateField(request.Field);
+            var field = Converter.Convert<FieldDTO, Field>(request.Field);
+
+            // Move into a generic List<T> extension? e.g. List<T>.Upsert(field)
 
             var existingField = nodeType.Fields.FirstOrDefault(f => f.Key.Equals(field.Key));
 

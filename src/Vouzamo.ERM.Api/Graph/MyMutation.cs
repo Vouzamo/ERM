@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
+using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.Common.Extensions;
+using Vouzamo.ERM.Common.Models;
+using Vouzamo.ERM.Common.Models.Validation;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.DTOs;
 
@@ -13,7 +16,7 @@ namespace Vouzamo.ERM.Api.Graph
 {
     public class MyMutation : ObjectGraphType
     {
-        public MyMutation(IMediator mediator)
+        public MyMutation(IMediator mediator, IConverter converter)
         {
             Name = "Mutation";
 
@@ -98,7 +101,7 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            FieldAsync<NodeGraphType>(
+            FieldAsync<JsonGraphType>(
                 "nodeProperties",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "node" },
@@ -115,7 +118,9 @@ namespace Vouzamo.ERM.Api.Graph
 
                     var nodes = await mediator.Send(new NodesByIdQuery(new List<Guid> { id }));
 
-                    if(nodes.TryGetValue(id, out var node))
+                    var results = new List<IValidationResult>();
+
+                    if (nodes.TryGetValue(id, out var node))
                     {
                         var nodeTypes = await mediator.Send(new NodeTypesByIdQuery(new List<Guid> { node.Type }));
 
@@ -142,13 +147,34 @@ namespace Vouzamo.ERM.Api.Graph
                                 {
                                     node.Properties[key].Remove(localization);
                                 }
+
+                                if(node.Properties[key].TryGetLocalizedValue(localizationChain, out var value))
+                                {
+                                    results.Add(editor.Field.Validate(value, converter));
+                                }
+                                else
+                                {
+                                    var mandatoryResult = new ValueValidationResult(!editor.Field.Mandatory);
+
+                                    if(!mandatoryResult.Valid)
+                                    {
+                                        mandatoryResult.Messages.Add(new PropertyErrorValidationMessage(editor.Field.Key, $"Mandatory fields must provide a default value"));
+                                    }
+
+                                    results.Add(mandatoryResult);
+                                }
                             }
                         }
                     }
 
-                    await mediator.Send(new UpdateNodeCommand(node));
+                    var result = new AggregateValidationResult(results);
 
-                    return node;
+                    if(result.Valid)
+                    {
+                        await mediator.Send(new UpdateNodeCommand(node));
+                    }
+
+                    return result;
                 }
             );
         }

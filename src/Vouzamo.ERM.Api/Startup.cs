@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Vouzamo.ERM.Api.Graph;
+using Vouzamo.ERM.Api.Extensions;
+using Vouzamo.ERM.Common.Converters;
+using Vouzamo.ERM.DTOs;
 using Vouzamo.ERM.Providers.Elasticsearch.DI;
 
 namespace Vouzamo.ERM.Api
@@ -23,11 +22,15 @@ namespace Vouzamo.ERM.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSystemTextJsonSerializer();
+
             services.AddControllers();
 
             services.AddElasticsearchProvider(ElasticsearchOptions.Default);
 
             services.AddGraph();
+
+            services.AddTransient<IConverter, JsonSerializationConverter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

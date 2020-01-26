@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using Vouzamo.ERM.Common.Converters;
+using Vouzamo.ERM.Common.Models;
+using Vouzamo.ERM.Common.Models.Validation;
+using Vouzamo.ERM.Common.Serialization;
 
 namespace Vouzamo.ERM.Common
 {
@@ -31,7 +36,7 @@ namespace Vouzamo.ERM.Common
             Localizable = localizable;
         }
 
-        public abstract bool TryBuildValue(object raw, out object value);
+        public abstract IValidationResult Validate(object value, IConverter converter);
 
         public override int GetHashCode()
         {
@@ -58,20 +63,50 @@ namespace Vouzamo.ERM.Common
 
     public abstract class Field<T> : Field
     {
-        public override bool TryBuildValue(object raw, out object value)
+        public sealed override IValidationResult Validate(object value, IConverter converter)
         {
-            var json = JsonSerializer.Serialize(raw);
+            IValidationResult result;
 
-            if (Enumerable)
+            try
             {
-                value = JsonSerializer.Deserialize<List<T>>(json);
+                if (Enumerable)
+                {
+                    var typedValues = converter.Convert<object, List<T>>(value);
+
+                    result = new AggregateValidationResult(typedValues.Select(typedValue => ValidateValue(typedValue)));
+                }
+                else
+                {
+                    var typedValue = converter.Convert<object, T>(value);
+
+                    result = ValidateValue(typedValue);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                value = JsonSerializer.Deserialize<T>(json);
+                result = new ExceptionValidationResult(ex);
+
+                if (!result.Valid)
+                {
+                    result.Messages.Add(new PropertyErrorValidationMessage(Key, $"Couldn't coerce the value into the expected type: {Type}"));
+                }
             }
 
-            return value != default;
+            return result;
+        }
+
+        public virtual IValidationResult ValidateValue(T value)
+        {
+            var valid = !EqualityComparer<T>.Default.Equals(value, default) || !Mandatory;
+
+            var result = new ValueValidationResult(valid);
+
+            if (!result.Valid)
+            {
+                result.Messages.Add(new PropertyErrorValidationMessage(Key, $"Mandatory fields must specify or inherit a value"));
+            }
+
+            return result;
         }
 
         protected Field() : base()
