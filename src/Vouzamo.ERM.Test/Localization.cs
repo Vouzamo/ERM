@@ -27,7 +27,7 @@ namespace Vouzamo.ERM.Test
             {
                 { "givenName", new LocalizedValue
                     {
-                        { "default", "John" },
+                        { Constants.DefaultLocalization, "John" },
                         { "fr", "John (French)" }
                     }
                 },
@@ -38,13 +38,13 @@ namespace Vouzamo.ERM.Test
                 },
                 { "familyName", new LocalizedValue
                     {
-                        { "default", "Askew" },
+                        { Constants.DefaultLocalization, "Askew" },
                         { "fr-CA", "Askew (French Canadian)" }
                     }
                 },
                 { "age", new LocalizedValue
                     {
-                        { "default", 35 },
+                        { Constants.DefaultLocalization, 35 },
                         { "fr-CA", null }
                     }
                 }
@@ -54,7 +54,7 @@ namespace Vouzamo.ERM.Test
             {
                 "fr-CA",
                 "fr",
-                "default"
+                Constants.DefaultLocalization
             };
         }
 

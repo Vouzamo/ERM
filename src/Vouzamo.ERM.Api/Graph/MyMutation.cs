@@ -111,7 +111,7 @@ namespace Vouzamo.ERM.Api.Graph
                 resolve: async context =>
                 {
                     var id = context.GetArgument<Guid>("node");
-                    var localization = context.GetArgument("localization", "default");
+                    var localization = context.GetArgument("localization", Constants.DefaultLocalization);
                     var properties = context.GetArgument<Dictionary<string, object>>("properties");
 
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());

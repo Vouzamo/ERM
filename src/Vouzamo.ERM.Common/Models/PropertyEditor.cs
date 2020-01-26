@@ -11,9 +11,9 @@ namespace Vouzamo.ERM.Common.Models
         
         public object Fallback { get; set; }
 
-        public bool ReadOnly => !Field.Localizable && !Localization.Equals("default");
+        public bool ReadOnly => !Field.Localizable && !Localization.Equals(Constants.DefaultLocalization);
         public bool HasValue => LocalizedValue.ContainsKey(Localization);
-        public object Value => ReadOnly ? LocalizedValue.ValueOrDefault("default") : LocalizedValue.ValueOrDefault(Localization);
+        public object Value => ReadOnly ? LocalizedValue.ValueOrDefault(Constants.DefaultLocalization) : LocalizedValue.ValueOrDefault(Localization);
 
         public PropertyEditor(Field field, string localization, LocalizedValue localizedValue, object fallback = default)
         {

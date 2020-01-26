@@ -54,7 +54,7 @@ namespace Vouzamo.ERM.Common.Extensions
         {
             if(localizationHierarchy == default || !localizationHierarchy.Any())
             {
-                localizationHierarchy = new List<string> { "default" };
+                localizationHierarchy = new List<string> { Constants.DefaultLocalization };
             }
 
             var localized = new Dictionary<string, object>();

@@ -24,7 +24,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     new QueryArgument<StringGraphType> { Name = "localization" }
                 ),
                 resolve: async context => {
-                    var localization = context.GetArgument("localization", "default");
+                    var localization = context.GetArgument("localization", Constants.DefaultLocalization);
 
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);
@@ -48,7 +48,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     new QueryArgument<StringGraphType> { Name = "localization" }
                 ),
                 resolve: async context => {
-                    var localization = context.GetArgument("localization", "default");
+                    var localization = context.GetArgument("localization", Constants.DefaultLocalization);
 
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
+using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.CQRS;
 
@@ -31,7 +32,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
             var pt = new Hierarchy<string>("pt");
             pt.Children.Add(ptBR);
 
-            var root = new Hierarchy<string>("default");
+            var root = new Hierarchy<string>(Constants.DefaultLocalization);
             root.Children.Add(en);
             root.Children.Add(es);
             root.Children.Add(fr);
