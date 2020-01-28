@@ -56,7 +56,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
             services.AddTransient<IRequestHandler<UpdateCommand<Common.Edge>, Common.Edge>, UpdateCommandHandler<Common.Edge>>();
             services.AddTransient<IRequestHandler<RenameCommand<Common.Type>, bool>, RenameCommandHandler<Common.Type>>();
             services.AddTransient<IRequestHandler<RenameCommand<Common.Node>, bool>, RenameCommandHandler<Common.Node>>();
-            services.AddTransient<IRequestHandler<AddFieldCommand<Common.Type>, Common.Type>, AddFieldCommandHandler<Common.Type>>();
+            services.AddTransient<IRequestHandler<AddFieldCommand<Common.Type>, bool>, AddFieldCommandHandler<Common.Type>>();
         }
 
         private static void ConfigureClient(IElasticClient client, ElasticsearchOptions options)

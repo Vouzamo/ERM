@@ -11,7 +11,7 @@ using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 {
-    public class AddFieldCommandHandler<T> : IRequestHandler<AddFieldCommand<T>, T> where T : class, IHasFields, IIdentifiable<Guid>
+    public class AddFieldCommandHandler<T> : IRequestHandler<AddFieldCommand<T>, bool> where T : class, IHasFields, IIdentifiable<Guid>
     {
         protected IMediator Mediator { get; }
         protected IConverter Converter { get; }
@@ -22,7 +22,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
             Converter = converter;
         }
 
-        public async Task<T> Handle(AddFieldCommand<T> request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(AddFieldCommand<T> request, CancellationToken cancellationToken)
         {
             var types = await Mediator.Send(new ByIdQuery<T>(new List<Guid> { request.Id }));
 
@@ -46,9 +46,9 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
                 type.Fields.Add(field);
             }
 
-            await Mediator.Send(new UpdateCommand<T>(type));
+            var update = await Mediator.Send(new UpdateCommand<T>(type));
 
-            return type;
+            return true;
         }
     }
 }

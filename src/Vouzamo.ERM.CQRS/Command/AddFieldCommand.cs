@@ -5,7 +5,7 @@ using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.CQRS
 {
-    public class AddFieldCommand<T> : IRequest<T> where T : IHasFields, IIdentifiable<Guid>
+    public class AddFieldCommand<T> : IRequest<bool> where T : IHasFields, IIdentifiable<Guid>
     {
         public Guid Id { get; }
         public FieldDTO Field { get; }

@@ -50,7 +50,7 @@ namespace Vouzamo.ERM.Api.Graph.Types.Groups
                 }
             );
 
-            FieldAsync<TypeGraphType>(
+            FieldAsync<BooleanGraphType>(
                 "addField",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
