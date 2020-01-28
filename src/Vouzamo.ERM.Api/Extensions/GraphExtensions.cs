@@ -1,6 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Server;
 using GraphQL.Server.Ui.GraphiQL;
+using GraphQL.Server.Ui.Playground;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Vouzamo.ERM.Api.Graph;
@@ -39,17 +40,19 @@ namespace Vouzamo.ERM.Api.Extensions
 
             services.AddSingleton<JsonGraphType>();
 
-            services.AddSingleton<NodeTypeGraphType>();
+            services.AddSingleton<TypeGraphType>();
             services.AddSingleton<NodeGraphType>();
-            services.AddSingleton<EdgeTypeGraphType>();
             services.AddSingleton<EdgeGraphType>();
+
             services.AddSingleton<EdgeTraversalGraphType>();
+
             services.AddSingleton<FieldInterface>();
             services.AddSingleton<StringFieldGraphType>();
             services.AddSingleton<IntegerFieldGraphType>();
 
             services.AddSingleton<FieldInputType>();
 
+            services.AddSingleton<TypeScopeEnumerationGraphType>();
             services.AddSingleton<DirectionEnumerationGraphType>();
         }
 
@@ -64,6 +67,7 @@ namespace Vouzamo.ERM.Api.Extensions
 
             app.UseGraphiQLServer(new GraphiQLOptions());
 
+            app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
         }
     }
 }

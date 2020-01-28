@@ -3,9 +3,13 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Nest;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Vouzamo.ERM.Common.Serialization;
+using Vouzamo.ERM.CQRS;
+using Vouzamo.ERM.CQRS.Command;
 using Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command;
+using Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query;
 using Vouzamo.ERM.Providers.Elasticsearch.Serialization;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.DI
@@ -21,21 +25,17 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
                 var jsonSerializer = serviceCollection.GetService<IJsonSerializer>();
 
                 var connectionSettings = new ConnectionSettings(connectionPool, (builtin, settings) => new CustomSerializer(jsonSerializer))
+                .DefaultMappingFor<Common.Type>(mapping => mapping
+                    .IndexName(options.TypesIndex)
+                    .IdProperty(nodeType => nodeType.Id)
+                )
                 .DefaultMappingFor<Common.Node>(mapping => mapping
                     .IndexName(options.NodesIndex)
                     .IdProperty(node => node.Id)
                 )
-                .DefaultMappingFor<Common.NodeType>(mapping => mapping
-                    .IndexName(options.NodeTypesIndex)
-                    .IdProperty(nodeType => nodeType.Id)
-                )
                 .DefaultMappingFor<Common.Edge>(mapping => mapping
                     .IndexName(options.EdgesIndex)
                     .IdProperty(edge => edge.Id)
-                )
-                .DefaultMappingFor<Common.EdgeType>(mapping => mapping
-                    .IndexName(options.EdgeTypesIndex)
-                    .IdProperty(edgeType => edgeType.Id)
                 );
 
                 var client = new ElasticClient(connectionSettings);
@@ -45,11 +45,33 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.DI
                 return client;
             });
 
-            services.AddMediatR(typeof(CreateNodeTypeCommandHandler));
+            services.AddMediatR(typeof(CreateEdgeCommandHandler));
+
+            // Register any handlers that use unbound generics types
+            services.AddTransient<IRequestHandler<ByIdQuery<Common.Type>, IDictionary<Guid, Common.Type>>, ByIdQueryHandler<Common.Type>>();
+            services.AddTransient<IRequestHandler<ByIdQuery<Common.Node>, IDictionary<Guid, Common.Node>>, ByIdQueryHandler<Common.Node>>();
+            services.AddTransient<IRequestHandler<ByIdQuery<Common.Edge>, IDictionary<Guid, Common.Edge>>, ByIdQueryHandler<Common.Edge>>();
+            services.AddTransient<IRequestHandler<UpdateCommand<Common.Type>, Common.Type>, UpdateCommandHandler<Common.Type>>();
+            services.AddTransient<IRequestHandler<UpdateCommand<Common.Node>, Common.Node>, UpdateCommandHandler<Common.Node>>();
+            services.AddTransient<IRequestHandler<UpdateCommand<Common.Edge>, Common.Edge>, UpdateCommandHandler<Common.Edge>>();
+            services.AddTransient<IRequestHandler<RenameCommand<Common.Type>, bool>, RenameCommandHandler<Common.Type>>();
+            services.AddTransient<IRequestHandler<RenameCommand<Common.Node>, bool>, RenameCommandHandler<Common.Node>>();
+            services.AddTransient<IRequestHandler<AddFieldCommand<Common.Type>, Common.Type>, AddFieldCommandHandler<Common.Type>>();
         }
 
         private static void ConfigureClient(IElasticClient client, ElasticsearchOptions options)
         {
+            var typesExists = client.Indices.Exists(options.TypesIndex);
+
+            if (!typesExists.Exists)
+            {
+                var typesCreate = client.Indices.Create(options.TypesIndex, create => create
+                    .Map<Common.Type>(m => m
+                        .AutoMap()
+                    )
+                );
+            }
+
             var nodesExists = client.Indices.Exists(options.NodesIndex);
 
             if(!nodesExists.Exists)

@@ -21,7 +21,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
         {
             var document = new Edge(request.Id, request.Type, request.From, request.To);
 
-            var typeExists = await Client.DocumentExistsAsync<EdgeType>(request.Type, selector => selector, cancellationToken);
+            var typeExists = await Client.DocumentExistsAsync<Common.Type>(request.Type, selector => selector, cancellationToken);
             var fromExists = await Client.DocumentExistsAsync<Node>(request.From, selector => selector, cancellationToken);
             var toExists = await Client.DocumentExistsAsync<Node>(request.To, selector => selector, cancellationToken);
 
@@ -30,7 +30,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
                 throw new DataMisalignedException("One or more of the ids does not exist");
             }
 
-            var response = await Client.IndexAsync(document, descriptor => descriptor, cancellationToken);
+            var response = await Client.CreateDocumentAsync(document, cancellationToken);
 
             if (!response.IsValid)
             {

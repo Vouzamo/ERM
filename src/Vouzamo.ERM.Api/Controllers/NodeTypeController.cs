@@ -28,7 +28,7 @@ namespace Vouzamo.ERM.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(Guid id, CancellationToken cancellationToken)
         {
-            var response = await Mediator.Send(new NodeTypesByIdQuery(new List<Guid> { id }), cancellationToken);
+            var response = await Mediator.Send(new ByIdQuery<Common.Type>(new List<Guid> { id }), cancellationToken);
 
             if(response.TryGetValue(id, out var nodeType))
             {
@@ -41,7 +41,7 @@ namespace Vouzamo.ERM.Api.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(string name, Guid id, CancellationToken cancellationToken)
         {
-            var response = await Mediator.Send(new CreateNodeTypeCommand(name, id), cancellationToken);
+            var response = await Mediator.Send(new CreateTypeCommand(name, TypeScope.Nodes, id), cancellationToken);
 
             return Created(Url.RouteUrl(response.Id), response);
         }
@@ -49,7 +49,7 @@ namespace Vouzamo.ERM.Api.Controllers
         [HttpPost]
         public async Task<ActionResult> Post(string name, CancellationToken cancellationToken)
         {
-            var response = await Mediator.Send(new CreateNodeTypeCommand(name), cancellationToken);
+            var response = await Mediator.Send(new CreateTypeCommand(name, TypeScope.Nodes), cancellationToken);
 
             return Created($"{Url.RouteUrl(response.Id)}/{response.Id}", response);
         }
@@ -57,7 +57,7 @@ namespace Vouzamo.ERM.Api.Controllers
         [HttpPost("{id}/fields")]
         public async Task<ActionResult> PostField(Guid id, [FromBody] FieldDTO field)
         {
-            var response = await Mediator.Send(new NodeTypeAddFieldCommand(id, field));
+            var response = await Mediator.Send(new AddFieldCommand<Common.Type>(id, field));
 
             return Accepted(response);
         }

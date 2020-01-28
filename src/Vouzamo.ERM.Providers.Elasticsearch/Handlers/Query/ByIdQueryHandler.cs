@@ -10,20 +10,20 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class NodesByIdQueryHandler : IRequestHandler<NodesByIdQuery, IDictionary<Guid, Node>>
+    public class ByIdQueryHandler<T> : IRequestHandler<ByIdQuery<T>, IDictionary<Guid, T>> where T : class, IIdentifiable<Guid>
     {
         protected IElasticClient Client { get; }
 
-        public NodesByIdQueryHandler(IElasticClient client)
+        public ByIdQueryHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<IDictionary<Guid, Node>> Handle(NodesByIdQuery request, CancellationToken cancellationToken)
+        public async Task<IDictionary<Guid, T>> Handle(ByIdQuery<T> request, CancellationToken cancellationToken)
         {
             var ids = request.Ids.Select(id => id.ToString());
 
-            var response = await Client.MultiGetAsync(m => m.GetMany<Node>(ids), cancellationToken);
+            var response = await Client.MultiGetAsync(m => m.GetMany<T>(ids), cancellationToken);
 
             if (!response.IsValid)
             {
@@ -31,7 +31,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
                 throw response.OriginalException;
             }
 
-            return response.SourceMany<Node>(ids).ToDictionary(doc => doc.Id);
+            return response.SourceMany<T>(ids).ToDictionary(doc => doc.Id);
         }
     }
 }

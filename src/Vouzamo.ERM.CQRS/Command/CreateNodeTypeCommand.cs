@@ -4,18 +4,18 @@ using Vouzamo.ERM.Common;
 
 namespace Vouzamo.ERM.CQRS
 {
-    public class CreateNodeCommand : IRequest<Node>
+    public class CreateTypeCommand : IRequest<Common.Type>
     {
         public Guid Id { get; }
-        public Guid NodeType { get; }
         public string Name { get; }
+        public TypeScope Scope { get; }
 
-        public CreateNodeCommand(Guid nodeType, string name, Guid? id = null)
+        public CreateTypeCommand(string name, TypeScope scope, Guid? id = null)
         {
-            NodeType = nodeType;
             Name = name;
+            Scope = scope;
 
-            if (!id.HasValue)
+            if(!id.HasValue)
             {
                 id = Guid.NewGuid();
             }

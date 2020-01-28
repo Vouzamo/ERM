@@ -10,7 +10,7 @@ namespace Vouzamo.ERM.Common.Serialization
     /// </summary>
     public class ObjectToPrimitiveConverter : JsonConverter<object>
     {
-        public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override object Read(ref Utf8JsonReader reader, System.Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.True)
             {

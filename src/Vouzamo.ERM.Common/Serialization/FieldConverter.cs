@@ -17,12 +17,12 @@ namespace Vouzamo.ERM.Common.Serialization
 
         }
 
-        public override bool CanConvert(Type objectType)
+        public override bool CanConvert(System.Type objectType)
         {
             return objectType == typeof(Field);
         }
 
-        public override Field Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override Field Read(ref Utf8JsonReader reader, System.Type typeToConvert, JsonSerializerOptions options)
         {
             using (var document = JsonDocument.ParseValue(ref reader))
             {

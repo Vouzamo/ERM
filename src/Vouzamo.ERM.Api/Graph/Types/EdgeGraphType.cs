@@ -15,13 +15,13 @@ namespace Vouzamo.ERM.Api.Graph.Types
             Field(edge => edge.Id, type: typeof(IdGraphType));
             Field<JsonGraphType>("properties", resolve: context => context.Source.Properties);
 
-            FieldAsync<EdgeTypeGraphType>(
+            FieldAsync<TypeGraphType>(
                 name: "type",
                 resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, EdgeType>("GetEdgeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader("GetTypeById", (Func<System.Collections.Generic.IEnumerable<Guid>, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<Guid, Common.Type>>>)(async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new EdgeTypesByIdQuery(ids));
-                    });
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
+                    }));
 
                     return await loader.LoadAsync(context.Source.Type);
                 }
@@ -32,7 +32,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
                 resolve: async (context) => {
                     var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Node>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.From);
@@ -44,7 +44,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
                 resolve: async (context) => {
                     var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Node>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.To);

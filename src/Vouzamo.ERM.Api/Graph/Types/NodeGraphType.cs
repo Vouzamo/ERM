@@ -29,9 +29,9 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
                     });
 
                     var type = await loader.LoadAsync(context.Source.Type);
@@ -53,9 +53,9 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
                     });
 
                     var type = await loader.LoadAsync(context.Source.Type);
@@ -64,12 +64,12 @@ namespace Vouzamo.ERM.Api.Graph.Types
                 }
             );
 
-            FieldAsync<NodeTypeGraphType>(
+            FieldAsync<TypeGraphType>(
                 "type",
                 resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.Type);

@@ -11,24 +11,24 @@ namespace Vouzamo.ERM.Api.Graph.Types
     {
         public EdgeTraversalGraphType(IMediator mediator, IDataLoaderContextAccessor accessor)
         {
-            FieldAsync<NodeGraphType>(
+            FieldAsync<EdgeGraphType>(
                 name: "edge",
                 resolve: async (context) => {
                     var loader = accessor.Context.GetOrAddBatchLoader<Guid, Edge>("GetEdgeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new EdgesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Edge>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.Id);
                 }
             );
 
-            FieldAsync<EdgeTypeGraphType>(
+            FieldAsync<TypeGraphType>(
                 name: "type",
                 resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, EdgeType>("GetEdgeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new EdgeTypesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.Type);
@@ -40,7 +40,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
                 resolve: async (context) => {
                     var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Node>(ids));
                     });
 
                     return await loader.LoadAsync(context.Source.Node);

@@ -3,13 +3,14 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using Vouzamo.ERM.Api.Graph.Types;
+using Vouzamo.ERM.Api.Graph.Types.Groups;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.Common.Extensions;
-using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.Common.Models.Validation;
 using Vouzamo.ERM.CQRS;
+using Vouzamo.ERM.CQRS.Command;
 using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Api.Graph
@@ -20,20 +21,7 @@ namespace Vouzamo.ERM.Api.Graph
         {
             Name = "Mutation";
 
-            FieldAsync<EdgeTypeGraphType>(
-                "createEdgeType",
-                arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
-                    new QueryArgument<IdGraphType> { Name = "id" }
-                ),
-                resolve: async context =>
-                {
-                    var name = context.GetArgument<string>("name");
-                    var id = context.GetArgument<Guid?>("id");
-
-                    return await mediator.Send(new CreateEdgeTypeCommand(name, id));
-                }
-            );
+            Field<TypeMutationsGraphType>("types", resolve: context => new { });
 
             FieldAsync<EdgeGraphType>(
                 "createEdge",
@@ -54,21 +42,6 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            FieldAsync<NodeTypeGraphType>(
-                "createNodeType",
-                arguments: new QueryArguments(
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" },
-                    new QueryArgument<IdGraphType> { Name = "id" }
-                ),
-                resolve: async context =>
-                {
-                    var name = context.GetArgument<string>("name");
-                    var id = context.GetArgument<Guid?>("id");
-
-                    return await mediator.Send(new CreateNodeTypeCommand(name, id));
-                }
-            );
-
             FieldAsync<NodeGraphType>(
                 "createNode",
                 arguments: new QueryArguments(
@@ -86,18 +59,18 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            FieldAsync<NodeTypeGraphType>(
-                "addFieldToNodeType",
+            FieldAsync<BooleanGraphType>(
+                name: "renameNode",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
-                    new QueryArgument<NonNullGraphType<FieldInputType>> { Name = "field" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "name" }
                 ),
                 resolve: async context =>
                 {
                     var id = context.GetArgument<Guid>("id");
-                    var field = context.GetArgument<FieldDTO>("field");
-                    
-                    return await mediator.Send(new NodeTypeAddFieldCommand(id, field));
+                    var name = context.GetArgument<string>("name");
+
+                    return await mediator.Send(new RenameCommand<Node>(id, name));
                 }
             );
 
@@ -116,13 +89,13 @@ namespace Vouzamo.ERM.Api.Graph
 
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
 
-                    var nodes = await mediator.Send(new NodesByIdQuery(new List<Guid> { id }));
+                    var nodes = await mediator.Send(new ByIdQuery<Node>(new List<Guid> { id }));
 
                     var results = new List<IValidationResult>();
 
                     if (nodes.TryGetValue(id, out var node))
                     {
-                        var nodeTypes = await mediator.Send(new NodeTypesByIdQuery(new List<Guid> { node.Type }));
+                        var nodeTypes = await mediator.Send(new ByIdQuery<Common.Type>(new List<Guid> { node.Type }));
 
                         if(nodeTypes.TryGetValue(node.Type, out var nodeType))
                         {
@@ -130,40 +103,7 @@ namespace Vouzamo.ERM.Api.Graph
 
                             var editors = nodeType.Fields.AsEditors(node.Properties, localizationChain);
 
-                            foreach(var editor in editors)
-                            {
-                                var key = editor.Field.Key;
-
-                                if (!node.Properties.ContainsKey(key))
-                                {
-                                    node.Properties.Add(key, new LocalizedValue());
-                                }
-
-                                if (!editor.ReadOnly && properties.ContainsKey(key))
-                                {
-                                    node.Properties[key][localization] = properties[key];
-                                }
-                                else
-                                {
-                                    node.Properties[key].Remove(localization);
-                                }
-
-                                if(node.Properties[key].TryGetLocalizedValue(localizationChain, out var value))
-                                {
-                                    results.Add(editor.Field.Validate(value, converter));
-                                }
-                                else
-                                {
-                                    var mandatoryResult = new ValueValidationResult(!editor.Field.Mandatory);
-
-                                    if(!mandatoryResult.Valid)
-                                    {
-                                        mandatoryResult.Messages.Add(new PropertyErrorValidationMessage(editor.Field.Key, $"Mandatory fields must provide a default value"));
-                                    }
-
-                                    results.Add(mandatoryResult);
-                                }
-                            }
+                            results.AddRange(editors.ValidateProperties(node, localization, localizationChain, converter, properties));
                         }
                     }
 
@@ -171,7 +111,7 @@ namespace Vouzamo.ERM.Api.Graph
 
                     if(result.Valid)
                     {
-                        await mediator.Send(new UpdateNodeCommand(node));
+                        await mediator.Send(new UpdateCommand<Node>(node));
                     }
 
                     return result;

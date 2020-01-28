@@ -18,9 +18,9 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
         public async Task<Node> Handle(CreateNodeCommand request, CancellationToken cancellationToken)
         {
-            var document = new Node(request.Id, request.NodeType, request.Name);
+            var document = new Node(request.Id, request.Type, request.Name);
 
-            var response = await Client.IndexAsync(document, descriptor => descriptor, cancellationToken);
+            var response = await Client.CreateDocumentAsync(document, cancellationToken);
 
             if (!response.IsValid)
             {

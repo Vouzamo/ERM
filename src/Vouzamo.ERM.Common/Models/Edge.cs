@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Vouzamo.ERM.Common
 {
-    public class Edge
+    public class Edge : IIdentifiable<Guid>, IHasProperties<LocalizedValue>
     {
         public Guid Id { get; set; }
         public Guid Type { get; set; }

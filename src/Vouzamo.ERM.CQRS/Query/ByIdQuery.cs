@@ -5,11 +5,11 @@ using Vouzamo.ERM.Common;
 
 namespace Vouzamo.ERM.CQRS
 {
-    public class EdgesByIdQuery : IRequest<IDictionary<Guid, Edge>>
+    public class ByIdQuery<T> : IRequest<IDictionary<Guid, T>> where T : IIdentifiable<Guid>
     {
         public IEnumerable<Guid> Ids { get; }
 
-        public EdgesByIdQuery(IEnumerable<Guid> ids)
+        public ByIdQuery(IEnumerable<Guid> ids)
         {
             Ids = ids;
         }

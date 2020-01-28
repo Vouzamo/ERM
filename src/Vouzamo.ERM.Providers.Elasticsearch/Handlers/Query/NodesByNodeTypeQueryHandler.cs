@@ -9,16 +9,16 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class NodesByNodeTypesQueryHandler : IRequestHandler<NodesByNodeTypesQuery, ILookup<Guid, Node>>
+    public class NodesByTypesQueryHandler : IRequestHandler<NodesByTypesQuery, ILookup<Guid, Node>>
     {
         protected IElasticClient Client { get; }
 
-        public NodesByNodeTypesQueryHandler(IElasticClient client)
+        public NodesByTypesQueryHandler(IElasticClient client)
         {
             Client = client;
         }
 
-        public async Task<ILookup<Guid, Node>> Handle(NodesByNodeTypesQuery request, CancellationToken cancellationToken)
+        public async Task<ILookup<Guid, Node>> Handle(NodesByTypesQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<Node>(descriptor => descriptor
                 .Query(q => q

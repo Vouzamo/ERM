@@ -5,17 +5,17 @@ using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.CQRS
 {
-    public class NodeTypeAddFieldCommand : IRequest<NodeType>
+    public class AddFieldCommand<T> : IRequest<T> where T : IHasFields, IIdentifiable<Guid>
     {
         public Guid Id { get; }
         public FieldDTO Field { get; }
 
-        protected NodeTypeAddFieldCommand()
+        protected AddFieldCommand()
         {
 
         }
 
-        public NodeTypeAddFieldCommand(Guid id, FieldDTO field) : this()
+        public AddFieldCommand(Guid id, FieldDTO field) : this()
         {
             Id = id;
             Field = field;

@@ -7,12 +7,14 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Graph.Types
 {
-    public class NodeTypeGraphType : ObjectGraphType<NodeType>
+    public class TypeGraphType : ObjectGraphType<Common.Type>
     {
-        public NodeTypeGraphType(IMediator mediator, IDataLoaderContextAccessor accessor)
+        public TypeGraphType(IMediator mediator, IDataLoaderContextAccessor accessor)
         {
             Field(nodeType => nodeType.Id, type: typeof(IdGraphType));
             Field(nodeType => nodeType.Name);
+            Field(type => type.Scope, type: typeof(TypeScopeEnumerationGraphType));
+
             Field<ListGraphType<FieldInterface>>("fields", resolve: (context) => context.Source.Fields);
 
             FieldAsync<ListGraphType<NodeGraphType>>(
@@ -28,7 +30,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
 
                     var loader = accessor.Context.GetOrAddCollectionBatchLoader<Guid, Node>("GetNodesByNodeTypeId", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByNodeTypesQuery(ids, take, skip), cancellationToken);
+                        return await mediator.Send(new NodesByTypesQuery(ids, take, skip), cancellationToken);
                     });
 
                     return await loader.LoadAsync(context.Source.Id);

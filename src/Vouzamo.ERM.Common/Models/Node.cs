@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Vouzamo.ERM.Common
 {
-    public class Node
+    public class Node : IHasName, IIdentifiable<Guid>, IHasProperties<LocalizedValue>
     {
         public Guid Id { get; set; }
         public Guid Type { get; set; }

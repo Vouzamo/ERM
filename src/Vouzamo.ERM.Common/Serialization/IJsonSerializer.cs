@@ -8,9 +8,9 @@ namespace Vouzamo.ERM.Common.Serialization
     public interface IJsonSerializer
     {
         T Deserialize<T>(string json);
-        object Deserialize(Type type, string json);
+        object Deserialize(System.Type type, string json);
         Task<T> DeserializeAsync<T>(string json, CancellationToken cancellationToken = default);
-        Task<object> DeserializeAsync(Type type, string json, CancellationToken cancellationToken = default);
+        Task<object> DeserializeAsync(System.Type type, string json, CancellationToken cancellationToken = default);
 
         string Serialize<T>(T data);
         Task<string> SerializeAsync<T>(T data, CancellationToken cancellationToken = default);

@@ -11,22 +11,22 @@ using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 {
-    public class NodeTypeAddFieldCommandHandler : IRequestHandler<NodeTypeAddFieldCommand, NodeType>
+    public class AddFieldCommandHandler<T> : IRequestHandler<AddFieldCommand<T>, T> where T : class, IHasFields, IIdentifiable<Guid>
     {
         protected IMediator Mediator { get; }
         protected IConverter Converter { get; }
 
-        public NodeTypeAddFieldCommandHandler(IMediator mediator, IConverter converter)
+        public AddFieldCommandHandler(IMediator mediator, IConverter converter)
         {
             Mediator = mediator;
             Converter = converter;
         }
 
-        public async Task<NodeType> Handle(NodeTypeAddFieldCommand request, CancellationToken cancellationToken)
+        public async Task<T> Handle(AddFieldCommand<T> request, CancellationToken cancellationToken)
         {
-            var nodeTypes = await Mediator.Send(new NodeTypesByIdQuery(new List<Guid> { request.Id }));
+            var types = await Mediator.Send(new ByIdQuery<T>(new List<Guid> { request.Id }));
 
-            if(!nodeTypes.TryGetValue(request.Id, out var nodeType))
+            if(!types.TryGetValue(request.Id, out var type))
             {
                 throw new KeyNotFoundException($"Node '{request.Id}' not found.");
             }
@@ -35,20 +35,20 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
             // Move into a generic List<T> extension? e.g. List<T>.Upsert(field)
 
-            var existingField = nodeType.Fields.FirstOrDefault(f => f.Key.Equals(field.Key));
+            var existingField = type.Fields.FirstOrDefault(f => f.Key.Equals(field.Key));
 
             if (existingField != default)
             {
-                nodeType.Fields[nodeType.Fields.IndexOf(existingField)] = field;
+                type.Fields[type.Fields.IndexOf(existingField)] = field;
             }
             else
             {
-                nodeType.Fields.Add(field);
+                type.Fields.Add(field);
             }
 
-            await Mediator.Send(new UpdateNodeTypeCommand(nodeType));
+            await Mediator.Send(new UpdateCommand<T>(type));
 
-            return nodeType;
+            return type;
         }
     }
 }

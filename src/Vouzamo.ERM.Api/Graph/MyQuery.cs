@@ -33,15 +33,15 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            FieldAsync<NodeTypeGraphType>(
-                name: "nodeType",
+            FieldAsync<TypeGraphType>(
+                name: "type",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" }
                 ),
                 resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, NodeType>("GetNodeTypeById", async (ids, cancellationToken) =>
+                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodeTypesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
                     });
 
                     return await loader.LoadAsync(context.GetArgument<Guid>("id"));
@@ -56,7 +56,7 @@ namespace Vouzamo.ERM.Api.Graph
                 resolve: async (context) => {
                     var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
                     {
-                        return await mediator.Send(new NodesByIdQuery(ids));
+                        return await mediator.Send(new ByIdQuery<Node>(ids));
                     });
 
                     return await loader.LoadAsync(context.GetArgument<Guid>("id"));

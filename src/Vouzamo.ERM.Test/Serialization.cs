@@ -23,11 +23,11 @@ namespace Vouzamo.ERM.Test
         [TestMethod]
         public void NodeType()
         {
-            var original = new NodeType(Guid.NewGuid(), "Car");
+            var original = new Common.Type(Guid.NewGuid(), "Car", TypeScope.Nodes);
             original.Fields.Add(new StringField("manufacturer", "Manufacturer"));
 
             var json = JsonSerializer.Serialize(original, Options);
-            var deserialized = JsonSerializer.Deserialize<NodeType>(json, Options);
+            var deserialized = JsonSerializer.Deserialize<Common.Type>(json, Options);
 
             Assert.AreEqual(original, deserialized);
         }

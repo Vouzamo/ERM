@@ -12,8 +12,4 @@
     <ProjectReference Include="..\Vouzamo.ERM.Common\Vouzamo.ERM.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Command\" />
-  </ItemGroup>
-
 </Project>
