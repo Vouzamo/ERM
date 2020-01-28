@@ -23,9 +23,21 @@ Lets use an example to explain how to produce a data model:
 Using Graph*i*QL, run the following mutation:
 
 ```javascript
-mutation CreateHumanNodeType {
-  createNodeType(name: "Human") {
-    id
+mutation CreateNodeTypes {
+  human: types {
+    create(name: "Human", scope: NODES) {
+      id
+    }
+  }
+  dog: types {
+    create(name: "Dog", scope: NODES) {
+      id
+    }
+  }
+  cat: types {
+    create(name: "Cat", scope: NODES) {
+      id
+    }
   }
 }
 ```
