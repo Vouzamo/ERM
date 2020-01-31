@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Vouzamo.ERM.Api.Extensions;
+using Vouzamo.ERM.Api.Managers;
+using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.DTOs;
 using Vouzamo.ERM.Providers.Elasticsearch.DI;
@@ -26,6 +28,7 @@ namespace Vouzamo.ERM.Api
 
             services.AddControllers();
 
+            services.AddSingleton<INotificationManager, NotificationManager>();
             services.AddElasticsearchProvider(ElasticsearchOptions.Default);
 
             services.AddGraph();

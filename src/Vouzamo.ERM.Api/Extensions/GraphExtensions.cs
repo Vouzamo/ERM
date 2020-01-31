@@ -54,6 +54,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
             services.AddSingleton<TypeScopeEnumerationGraphType>();
             services.AddSingleton<DirectionEnumerationGraphType>();
+
+            services.AddSingleton<NotificationMessageGraphType>();
         }
 
         public static void UseGraph(this IApplicationBuilder app)

@@ -8,6 +8,7 @@ using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.Common.Extensions;
+using Vouzamo.ERM.Common.Models.Notifications;
 using Vouzamo.ERM.Common.Models.Validation;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.CQRS.Command;
@@ -17,7 +18,7 @@ namespace Vouzamo.ERM.Api.Graph
 {
     public class MyMutation : ObjectGraphType
     {
-        public MyMutation(IMediator mediator, IConverter converter)
+        public MyMutation(IMediator mediator, IConverter converter, INotificationManager manager)
         {
             Name = "Mutation";
 
@@ -115,6 +116,22 @@ namespace Vouzamo.ERM.Api.Graph
                     }
 
                     return result;
+                }
+            );
+
+            FieldAsync<BooleanGraphType>(
+                name: "addNotification",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "title" },
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "message" }
+                ),
+                resolve: async context =>
+                {
+                    var message = new SimpleNotificationMessage(context.GetArgument<string>("title"), context.GetArgument<string>("message"));
+
+                    await manager.Notify(message);
+
+                    return true;
                 }
             );
         }
