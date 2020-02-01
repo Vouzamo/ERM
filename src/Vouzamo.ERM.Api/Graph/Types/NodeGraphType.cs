@@ -7,10 +7,20 @@ using System.Linq;
 using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Extensions;
+using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Graph.Types
 {
+    public class EditorGraphType : ObjectGraphType<Editor>
+    {
+        public EditorGraphType()
+        {
+            Field<ListGraphType<JsonGraphType>>("editors", resolve: context => context.Source.Editors);
+            Field<JsonGraphType>("values", resolve: context => context.Source.AsValues());
+        }
+    }
+
     public class NodeGraphType : ObjectGraphType<Node>
     {
         public NodeGraphType(IMediator mediator, IDataLoaderContextAccessor accessor)
@@ -18,7 +28,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
             Field(node => node.Id, type: typeof(IdGraphType));
             Field(node => node.Name);
 
-            FieldAsync<JsonGraphType>(
+            FieldAsync<EditorGraphType>(
                 "properties",
                 arguments: new QueryArguments(
                     new QueryArgument<StringGraphType> { Name = "localization" }
@@ -29,51 +39,17 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
-                    });
+                    var type = await mediator.Send(new ByIdQuery<Common.Type>(context.Source.Type));
 
-                    var type = await loader.LoadAsync(context.Source.Type);
+                    var editor = type.Fields.AsEditor(context.Source.Properties, localizationChain);
 
-                    var editors = type.Fields.AsEditors(context.Source.Properties, localizationChain);
-
-                    return editors.AsValues();
-                }
-            );
-
-            FieldAsync<JsonGraphType>(
-                "editor",
-                arguments: new QueryArguments(
-                    new QueryArgument<StringGraphType> { Name = "localization" }
-                ),
-                resolve: async context => {
-                    var localization = context.GetArgument("localization", Constants.DefaultLocalization);
-
-                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
-                    var localizationChain = localizationHierarchy.FindDependencyChain(localization);
-
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
-                    });
-
-                    var type = await loader.LoadAsync(context.Source.Type);
-
-                    return type.Fields.AsEditors(context.Source.Properties, localizationChain);
+                    return editor;
                 }
             );
 
             FieldAsync<TypeGraphType>(
                 "type",
-                resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Common.Type>("GetTypeById", async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
-                    });
-
-                    return await loader.LoadAsync(context.Source.Type);
-                }
+                resolve: async (context) => await mediator.Send(new ByIdQuery<Common.Type>(context.Source.Type))
             );
 
             FieldAsync<ListGraphType<EdgeTraversalGraphType>>(

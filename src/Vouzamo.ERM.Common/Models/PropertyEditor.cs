@@ -1,7 +1,20 @@
-﻿using Vouzamo.ERM.Common.Extensions;
+﻿using System.Collections.Generic;
+using Vouzamo.ERM.Common.Extensions;
 
 namespace Vouzamo.ERM.Common.Models
 {
+    public class Editor
+    {
+        public string Localization { get; }
+        public IEnumerable<PropertyEditor> Editors { get; }
+
+        public Editor(string localization, IEnumerable<PropertyEditor> editors)
+        {
+            Localization = localization;
+            Editors = editors;
+        }
+    }
+
     public class PropertyEditor
     {
         protected LocalizedValue LocalizedValue { get; }

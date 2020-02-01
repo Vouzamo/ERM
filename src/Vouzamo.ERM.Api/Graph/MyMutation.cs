@@ -2,6 +2,7 @@
 using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Groups;
 using Vouzamo.ERM.Api.Graph.Types.Input;
@@ -88,24 +89,24 @@ namespace Vouzamo.ERM.Api.Graph
                     var localization = context.GetArgument("localization", Constants.DefaultLocalization);
                     var properties = context.GetArgument<Dictionary<string, object>>("properties");
 
-                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
-
-                    var nodes = await mediator.Send(new ByIdQuery<Node>(new List<Guid> { id }));
-
                     var results = new List<IValidationResult>();
 
-                    if (nodes.TryGetValue(id, out var node))
+                    var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
+
+                    var node = await mediator.Send(new ByIdQuery<Node>(id));
+
+                    // Can't await this because of a bug: https://github.com/graphql-dotnet/graphql-dotnet/pull/1511
+                    //var nodeTypeFailing = await mediator.Send(new ByIdQuery<Common.Type>(node.Type));
+
+                    var nodeTypes = await mediator.Send(new ByIdsQuery<Common.Type>(new List<Guid> { node.Type }));
+
+                    if (nodeTypes.TryGetValue(node.Type, out var nodeType))
                     {
-                        var nodeTypes = await mediator.Send(new ByIdQuery<Common.Type>(new List<Guid> { node.Type }));
+                        var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
-                        if(nodeTypes.TryGetValue(node.Type, out var nodeType))
-                        {
-                            var localizationChain = localizationHierarchy.FindDependencyChain(localization);
+                        var editor = nodeType.Fields.AsEditor(node.Properties, localizationChain);
 
-                            var editors = nodeType.Fields.AsEditors(node.Properties, localizationChain);
-
-                            results.AddRange(editors.ValidateProperties(node, localization, localizationChain, converter, properties));
-                        }
+                        results.AddRange(editor.Editors.ValidateProperties(node, localization, localizationChain, converter, properties));
                     }
 
                     var result = new AggregateValidationResult(results);

@@ -9,30 +9,32 @@ namespace Vouzamo.ERM.Common.Extensions
 {
     public static class PropertyExtensions
     {
-        public static IDictionary<string, object> AsValues(this IEnumerable<PropertyEditor> editors)
+        public static IDictionary<string, object> AsValues(this Editor editor)
         {
             var values = new Dictionary<string, object>();
 
-            foreach(var editor in editors)
+            foreach(var propertyEditor in editor.Editors)
             {
-                var value = editor.Value;
+                var value = propertyEditor.Value;
 
-                if(!editor.HasValue)
+                if(!propertyEditor.HasValue)
                 {
-                    if(editor.Field.Localizable)
+                    if(propertyEditor.Field.Localizable)
                     {
-                        value = editor.Fallback;
+                        value = propertyEditor.Fallback;
                     }
                 }
 
-                values.Add(editor.Field.Key, value);
+                values.Add(propertyEditor.Field.Key, value);
             }
 
             return values;
         }
 
-        public static IEnumerable<PropertyEditor> AsEditors(this IEnumerable<Field> fields, IDictionary<string, LocalizedValue> properties, IEnumerable<string> localizationChain)
+        public static Editor AsEditor(this IEnumerable<Field> fields, IDictionary<string, LocalizedValue> properties, IEnumerable<string> localizationChain)
         {
+            var editors = new List<PropertyEditor>();
+
             var localization = localizationChain.First();
 
             var fallbacks = localizationChain.Count() > 1 ? Localize(properties, localizationChain.Skip(1)) : new Dictionary<string, object>();
@@ -48,8 +50,10 @@ namespace Vouzamo.ERM.Common.Extensions
                     editor.Fallback = fallback;
                 }
                 
-                yield return editor;
+                editors.Add(editor);
             }
+
+            return new Editor(localization, editors);
         }
 
         public static IDictionary<string, object> Localize(this IDictionary<string, LocalizedValue> properties, IEnumerable<string> localizationHierarchy = default)
@@ -96,13 +100,13 @@ namespace Vouzamo.ERM.Common.Extensions
                     source.Properties.Add(key, new LocalizedValue());
                 }
 
-                if (!editor.ReadOnly && props.ContainsKey(key))
+                if (editor.ReadOnly || !props.ContainsKey(key))
                 {
-                    source.Properties[key][localization] = props[key];
+                    source.Properties[key].Remove(localization);
                 }
                 else
                 {
-                    source.Properties[key].Remove(localization);
+                    source.Properties[key][localization] = props[key];
                 }
 
                 if (source.Properties[key].TryGetLocalizedValue(localizationChain, out var value))

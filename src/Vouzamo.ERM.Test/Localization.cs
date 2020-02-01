@@ -81,7 +81,7 @@ namespace Vouzamo.ERM.Test
         [TestMethod]
         public void PropertyEditors()
         {
-            var editors = Fields.AsEditors(Properties, LocalizationHierarchy);
+            var editors = Fields.AsEditor(Properties, LocalizationHierarchy);
 
             var familyName = editors.Single(editor => editor.Field.Key.Equals("familyName"));
 

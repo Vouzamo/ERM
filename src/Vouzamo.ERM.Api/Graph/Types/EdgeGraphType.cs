@@ -17,38 +17,17 @@ namespace Vouzamo.ERM.Api.Graph.Types
 
             FieldAsync<TypeGraphType>(
                 name: "type",
-                resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader("GetTypeById", (Func<System.Collections.Generic.IEnumerable<Guid>, System.Threading.CancellationToken, System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<Guid, Common.Type>>>)(async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Common.Type>(ids));
-                    }));
-
-                    return await loader.LoadAsync(context.Source.Type);
-                }
+                resolve: async (context) => await mediator.Send(new ByIdQuery<Common.Type>(context.Source.Type))
             );
 
             FieldAsync<NodeGraphType>(
                 name: "from",
-                resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Node>(ids));
-                    });
-
-                    return await loader.LoadAsync(context.Source.From);
-                }
+                resolve: async (context) => await mediator.Send(new ByIdQuery<Node>(context.Source.From))
             );
 
             FieldAsync<NodeGraphType>(
                 name: "to",
-                resolve: async (context) => {
-                    var loader = accessor.Context.GetOrAddBatchLoader<Guid, Node>("GetNodeById", async (ids, cancellationToken) =>
-                    {
-                        return await mediator.Send(new ByIdQuery<Node>(ids));
-                    });
-
-                    return await loader.LoadAsync(context.Source.To);
-                }
+                resolve: async (context) => await mediator.Send(new ByIdQuery<Node>(context.Source.To))
             );
         }
     }

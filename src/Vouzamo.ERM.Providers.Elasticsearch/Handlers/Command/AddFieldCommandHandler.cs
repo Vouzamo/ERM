@@ -24,7 +24,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Command
 
         public async Task<bool> Handle(AddFieldCommand<T> request, CancellationToken cancellationToken)
         {
-            var types = await Mediator.Send(new ByIdQuery<T>(new List<Guid> { request.Id }));
+            var types = await Mediator.Send(new ByIdsQuery<T>(new List<Guid> { request.Id }));
 
             if(!types.TryGetValue(request.Id, out var type))
             {

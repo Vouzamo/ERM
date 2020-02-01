@@ -1,10 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Types;
-using System;
-using System.Collections.Generic;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 
 namespace Vouzamo.ERM.Api.Graph
 {
