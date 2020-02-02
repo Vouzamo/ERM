@@ -1,7 +1,9 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Types;
 using MediatR;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Groups;
@@ -76,7 +78,7 @@ namespace Vouzamo.ERM.Api.Graph
                 }
             );
 
-            FieldAsync<JsonGraphType>(
+            FieldAsync<BooleanGraphType>(
                 "nodeProperties",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "node" },
@@ -111,12 +113,19 @@ namespace Vouzamo.ERM.Api.Graph
 
                     var result = new AggregateValidationResult(results);
 
-                    if(result.Valid)
+                    if (result.Valid)
                     {
                         await mediator.Send(new UpdateCommand<Node>(node));
                     }
 
-                    return result;
+                    context.Errors.AddRange(result.Messages.Select(message => {
+                        var path = context.Path.ToList();
+                        path.Add("properties");
+                        path.Add(message.Reference);
+                        return new ExecutionError(message.Message) { Path = path };
+                    }));
+
+                    return result.Valid;
                 }
             );
 
