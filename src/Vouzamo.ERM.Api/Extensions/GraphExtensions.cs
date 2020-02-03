@@ -1,12 +1,15 @@
 ﻿using GraphQL;
+using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Server.Internal;
 using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Server.Ui.Playground;
 using GraphQL.Types;
+using GraphQL.Validation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
@@ -20,6 +23,21 @@ namespace Vouzamo.ERM.Api.Extensions
 {
     public static class GraphExtensions
     {
+        public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings> configure)
+        {
+            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+
+            services.TryAddTransient(s =>
+            {
+                var authSettings = new AuthorizationSettings();
+
+                configure(authSettings);
+
+                return authSettings;
+            });
+        }
+
         public static void AddGraph(this IServiceCollection services)
         {
             services.AddSingleton<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
@@ -31,6 +49,12 @@ namespace Vouzamo.ERM.Api.Extensions
                 options.AllowSynchronousIO = true;
             });
 
+            services.AddGraphQLAuth(settings =>
+            {
+                settings.AddPolicy("Command", p => p.RequireClaim("cognito:groups", "Command"));
+                settings.AddPolicy("Query", p => p.RequireClaim("cognito:groups", "Query"));
+            });
+
             services.AddGraphQL(options =>
             {
                 options.EnableMetrics = false;
@@ -39,7 +63,8 @@ namespace Vouzamo.ERM.Api.Extensions
             })
             .AddGraphTypes()
             .AddDataLoader()
-            .AddWebSockets();
+            .AddWebSockets()
+            .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
 
             services.AddSingleton(typeof(IGraphQLExecuter<>), typeof(MyGraphQLExecutor<>));
 
@@ -80,6 +105,7 @@ namespace Vouzamo.ERM.Api.Extensions
 
             // Enable endpoint for websockets (subscriptions)
             app.UseGraphQLWebSockets<MySchema>("/graphql");
+
             // Enable endpoint for querying
             app.UseGraphQL<MySchema>("/graphql");
 

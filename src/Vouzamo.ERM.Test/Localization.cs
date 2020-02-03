@@ -81,11 +81,11 @@ namespace Vouzamo.ERM.Test
         [TestMethod]
         public void PropertyEditors()
         {
-            var editors = Fields.AsEditor(Properties, LocalizationHierarchy);
+            var editor = Fields.AsEditor(Properties, LocalizationHierarchy);
 
-            var familyName = editors.Single(editor => editor.Field.Key.Equals("familyName"));
+            var familyName = editor.Editors.Single(editor => editor.Field.Key.Equals("familyName"));
 
-            Assert.AreEqual(4, editors.Count());
+            Assert.AreEqual(4, editor.Editors.Count());
             Assert.AreEqual("Askew (French Canadian)", familyName.Value);
             Assert.AreEqual("Askew", familyName.Fallback);
         }

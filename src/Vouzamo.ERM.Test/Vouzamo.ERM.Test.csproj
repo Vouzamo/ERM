@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Amazon.Extensions.CognitoAuthentication" Version="1.0.3" />
+    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="3.3.107.23" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.0.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.0.0" />

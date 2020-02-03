@@ -1,4 +1,5 @@
 ﻿using GraphQL;
+using GraphQL.Authorization;
 using GraphQL.Types;
 using MediatR;
 using System;
@@ -24,6 +25,7 @@ namespace Vouzamo.ERM.Api.Graph
         public MyMutation(IMediator mediator, IConverter converter, INotificationManager manager)
         {
             Name = "Mutation";
+            this.AuthorizeWith("Command");
 
             Field<TypeMutationsGraphType>("types", resolve: context => new { });
 

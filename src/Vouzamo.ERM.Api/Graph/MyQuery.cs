@@ -1,11 +1,10 @@
-﻿using GraphQL.DataLoader;
+﻿using GraphQL.Authorization;
+using GraphQL.DataLoader;
 using GraphQL.Types;
 using MediatR;
 using System;
-using System.Collections.Generic;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Common;
-using Vouzamo.ERM.Common.Exceptions;
 using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Graph
@@ -15,6 +14,7 @@ namespace Vouzamo.ERM.Api.Graph
         public MyQuery(IMediator mediator, IDataLoaderContextAccessor accessor)
         {
             Name = "Query";
+            this.AuthorizeWith("Query");
 
             FieldAsync<ListGraphType<NodeGraphType>>(
                 name: "nodeSearch",
