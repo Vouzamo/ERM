@@ -1,44 +1,26 @@
-﻿import React, { createContext, useReducer } from 'react';
-import Amplify, { Auth } from 'aws-amplify';
+﻿import Amplify, { Auth } from 'aws-amplify';
 
-Amplify.configure({
-    Auth: {
-        region: 'us-east-1',
-        userPoolId: 'us-east-1_6u0RWKWaV',
-        userPoolWebClientId: '3gqq1t3c01f55dd02srt13le9l'
-    }
-});
+const _data = [];
 
-const initialState = { isAuthenticated: false };
+const Authentication = {
 
-const authenticationContext = createContext(initialState);
+    init: () => {
+        Amplify.configure({
+            Auth: {
+                region: 'us-east-1',
+                userPoolId: 'us-east-1_6u0RWKWaV',
+                userPoolWebClientId: '3gqq1t3c01f55dd02srt13le9l'
+            }
+        });
 
-const { Provider } = authenticationContext;
+        Auth.currentSession().then(session => _data.push(session))
+    },
 
-function reducer(state, action) {
-
-    try {
-        switch (action.type) {
-            case 'login':
-                Auth.signIn(action.email, action.password);
-                return { ...state, isAuthenticated: true };
-            case 'logout':
-                Auth.signOut();
-                return { ...state, isAuthenticated: false };
-            default:
-                return state;
-        }
-    } catch {
-        return state;
-    }
+    signIn: (email, password) => Auth.signIn(email, password),
+    signOut: () => Auth.signOut(),
+    isAuthenticated: () => Auth.currentSession().then(() => true).catch(() => false),
+    getToken: () => Auth.currentSession().then(session => session.idToken.jwtToken).catch(() => null)
 }
 
-const AuthenticationProvider = ({ children }) => {
-
-    const [state, dispatch] = useReducer(reducer, initialState);
-
-    return <Provider value={{ state, dispatch }}>{children}</Provider>;
-
-};
-
-export { authenticationContext, AuthenticationProvider }
+Object.freeze(Authentication);
+export default Authentication;

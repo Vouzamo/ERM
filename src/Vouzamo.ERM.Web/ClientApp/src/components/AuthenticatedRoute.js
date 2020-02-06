@@ -1,14 +1,29 @@
-﻿import React, { useContext } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Route, Redirect } from "react-router-dom";
-import { authenticationContext } from '../Authentication';
+import { Container, CircularProgress } from '@material-ui/core';
+import { Auth } from 'aws-amplify';
 
 export default function AuthenticatedRoute({ component: Component, ...rest }) {
 
-    const authState = useContext(authenticationContext);
-    const { state, dispatch } = authState;
+    const [isLoading, setLoadingState] = useState(true);
+    const [isAuthenticated, setAuthenticatedState] = useState(false);
+
+    useEffect(() => {
+        Auth.currentSession()
+            .then(() => setAuthenticatedState(true))
+            .catch(() => setAuthenticatedState(false))
+            .finally(() => setLoadingState(false))
+    });
+
+    const loading = (
+        <Container>
+            <CircularProgress />
+        </Container>
+    );
 
     return (
-        <Route {...rest} render={(props) => (state.isAuthenticated === true ? <Component {...props} /> : <Redirect to='/login' />)} />
+        isLoading ? loading : 
+        <Route {...rest} render={(props) => (isAuthenticated ? <Component {...props} /> : <Redirect to='/login' />)} />
     );
 
 }
