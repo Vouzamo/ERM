@@ -1,26 +1,31 @@
-import React, { useContext } from 'react';
-import { globalContext } from '../GlobalContext';
+import React, { Component } from 'react';
 
-import { Typography, Button } from '@material-ui/core';
+export class Home extends Component {
+  static displayName = Home.name;
 
-export function Home() {
+  constructor(props) {
+    super(props);
+    this.state = { currentCount: 0 };
+    this.incrementCounter = this.incrementCounter.bind(this);
+  }
 
-    const { state } = useContext(globalContext);
+  incrementCounter() {
+    this.setState({
+      currentCount: this.state.currentCount + 1
+    });
+  }
 
-    const token = () => {
-
-        if (state.authentication.isAuthenticated) {
-            alert(state.authentication.token);
-        } else {
-            alert('No token!');
-        }
-    }
-
+  render() {
     return (
-        <>
-            <Typography>Hello World</Typography>
-            <Button variant="contained" color="primary" onClick={token}>Output Session</Button>
-        </>
-    );
+      <div>
+        <h1>Counter</h1>
 
+        <p>This is a simple example of a React component.</p>
+
+        <p aria-live="polite">Current count: <strong>{this.state.currentCount}</strong></p>
+
+        <button className="btn btn-primary" onClick={this.incrementCounter}>Increment</button>
+      </div>
+    );
+  }
 }

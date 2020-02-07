@@ -1,6 +1,5 @@
 ﻿import React, { useState, useContext } from 'react';
 import { globalContext } from '../GlobalContext';
-import { useHistory } from 'react-router-dom';
 import { Auth } from 'aws-amplify';
 
 import { Container, CssBaseline, Avatar, Typography, TextField, FormControlLabel, Checkbox, Button, Grid, Link } from '@material-ui/core';
@@ -27,10 +26,9 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export default function Login(props) {
+export default function Login() {
 
-    const { state, dispatch } = useContext(globalContext);
-    const history = useHistory();
+    const { dispatch } = useContext(globalContext);
 
     const classes = useStyles();
 
@@ -47,7 +45,6 @@ export default function Login(props) {
             .then(() => {
                 Auth.currentSession().then(session => {
                     dispatch({ type: 'SIGN_IN', token: session.idToken.jwtToken });
-                    history.push('/');
                 })
                 
             })

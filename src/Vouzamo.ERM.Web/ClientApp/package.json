@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.1",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "4.0.0-alpha.41",
     "aws-amplify": "^2.2.2",
     "bootstrap": "^4.1.3",
     "jquery": "^3.4.1",
@@ -17,7 +18,16 @@
     "react-scripts": "^3.3.1",
     "reactstrap": "^6.3.0",
     "rimraf": "^2.6.2",
-    "typeface-roboto": "^0.0.75"
+    "typeface-roboto": "^0.0.75",
+    "apollo-link": "^1.2.13",
+    "apollo-client": "^2.6.8",
+    "apollo-cache-inmemory": "^1.6.5",
+    "apollo-utilities": "^1.3.3",
+    "apollo-link-http": "^1.5.16",
+    "apollo-link-ws": "^1.0.19",
+    "@apollo/react-hooks": "^3.1.3",
+    "subscriptions-transport-ws": "^0.9.16",
+    "graphql-tag": "^2.10.3"
   },
   "devDependencies": {
     "ajv": "^6.9.1",

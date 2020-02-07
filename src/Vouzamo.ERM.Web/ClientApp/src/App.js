@@ -3,13 +3,12 @@ import { Route } from 'react-router-dom';
 
 import { GlobalContextProvider } from './GlobalContext';
 
-import Amplify, { Auth } from 'aws-amplify';
+import Amplify from 'aws-amplify';
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 
 import Layout from './components/Layout';
 import { Home } from './components/Home';
-import Login from './components/Login';
-import { Counter } from './components/Counter';
+import { Secure } from './components/Secure';
 
 Amplify.configure({
     Auth: {
@@ -24,9 +23,8 @@ export default function App() {
     return (
         <GlobalContextProvider>
             <Layout>
-                <AuthenticatedRoute path="/" exact component={Home} />
-                <Route path="/counter" exact component={Counter} />
-                <Route path="/login" exact component={Login} />
+                <Route path="/" exact component={Home} />
+                <AuthenticatedRoute path="/secure" exact component={Secure} />
             </Layout>
         </GlobalContextProvider>
     );

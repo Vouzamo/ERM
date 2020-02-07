@@ -103,14 +103,13 @@ namespace Vouzamo.ERM.Api.Extensions
         {
             app.UseWebSockets();
 
-            // Enable endpoint for websockets (subscriptions)
-            app.UseGraphQLWebSockets<MySchema>("/graphql");
-
             // Enable endpoint for querying
             app.UseGraphQL<MySchema>("/graphql");
 
-            app.UseGraphiQLServer(new GraphiQLOptions());
+            // Enable endpoint for websockets (subscriptions)
+            app.UseGraphQLWebSockets<MySchema>("/graphql");
 
+            app.UseGraphiQLServer(new GraphiQLOptions());
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
         }
 

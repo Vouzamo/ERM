@@ -58,13 +58,13 @@ namespace Vouzamo.ERM.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
             app.UseAuthentication();
 
             app.UseGraph();
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {

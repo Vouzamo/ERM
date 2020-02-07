@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import { globalContext } from '../GlobalContext';
 import { Auth } from 'aws-amplify';
 
@@ -9,7 +9,6 @@ import { Menu as MenuIcon } from '@material-ui/icons';
 export default function Layout(props) {
 
     const { state, dispatch } = useContext(globalContext);
-    const history = useHistory();
 
     const logout = () => {
         Auth.signOut()
@@ -29,17 +28,10 @@ export default function Layout(props) {
                         Vouzamo : (E)ntity (R)esource (M)anagement
                     </Typography>
                     <Link color="inherit" component={RouterLink} to="/">Home</Link>
-                    <Link color="inherit" component={RouterLink} to="/counter">Counter</Link>
+                    <Link color="inherit" component={RouterLink} to="/secure">Secure</Link>
                     {state.authentication.isAuthenticated
                         ? <Button color="inherit" onClick={logout}>Logout</Button>
-                        : <>
-                            <Link color="inherit" component={RouterLink} to="/register">
-                                Register
-                            </Link>
-                            <Link color="inherit" component={RouterLink} to="/login">
-                                Sign in
-                            </Link>
-                        </>
+                        : <Link color="inherit" component={RouterLink} to="/secure">Sign in / Register</Link>
                     }
                 </Toolbar>
             </AppBar>
