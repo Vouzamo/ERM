@@ -1,11 +1,19 @@
-import React, { Component } from 'react';
+import React, { useContext } from 'react';
+import { globalContext } from '../GlobalContext';
+
 import { Typography, Button } from '@material-ui/core';
-import { Auth } from 'aws-amplify';
 
 export function Home() {
 
+    const { state } = useContext(globalContext);
+
     const token = () => {
-        return Auth.currentSession().then(session => alert(session.idToken.jwtToken)).catch(error => alert(error.message));
+
+        if (state.authentication.isAuthenticated) {
+            alert(state.authentication.token);
+        } else {
+            alert('No token!');
+        }
     }
 
     return (
