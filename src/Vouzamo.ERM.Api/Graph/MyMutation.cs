@@ -134,12 +134,14 @@ namespace Vouzamo.ERM.Api.Graph
             FieldAsync<BooleanGraphType>(
                 name: "addNotification",
                 arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<SeverityEnumerationGraphType>> { Name = "severity" },
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "title" },
-                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "message" }
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "message" },
+                    new QueryArgument<StringGraphType> { Name = "recipient" }
                 ),
                 resolve: async context =>
                 {
-                    var message = new SimpleNotificationMessage(context.GetArgument<string>("title"), context.GetArgument<string>("message"));
+                    var message = new SimpleNotificationMessage(context.GetArgument<string>("title"), context.GetArgument<string>("message"), context.GetArgument<Severity>("severity"), context.GetArgument<string>("recipient"));
 
                     await manager.Notify(message);
 

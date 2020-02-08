@@ -16,9 +16,9 @@ namespace Vouzamo.ERM.Api.Managers
             MessageStream = new Subject<INotificationMessage>();
         }
 
-        public Task<IObservable<INotificationMessage>> MessagesAsync()
+        public Task<IObservable<INotificationMessage>> MessagesAsync(string recipient)
         {
-            var observable = MessageStream.AsObservable();
+            var observable = MessageStream.Where(message => message.Recipient == null || message.Recipient.Equals(recipient)).AsObservable();
 
             return Task.FromResult(observable);
         }

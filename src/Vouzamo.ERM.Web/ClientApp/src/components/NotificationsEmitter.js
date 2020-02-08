@@ -2,7 +2,7 @@
 import gql from 'graphql-tag';
 import { globalContext } from '../GlobalContext';
 import { Snackbar, Slide, Typography } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
+import { Alert, AlertTitle } from '@material-ui/lab';
 import ApolloClient from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { split } from 'apollo-link';
@@ -16,7 +16,7 @@ export function NotificationsEmitter() {
     const { state } = useContext(globalContext);
 
     const [open, setOpen] = useState(false);
-    const [message, setMessage] = useState("Waiting...");
+    const [message, setMessage] = useState({});
 
     const httpLink = new HttpLink({
         uri: 'https://localhost:56432/graphql'
@@ -54,7 +54,11 @@ export function NotificationsEmitter() {
         
         console.log(e.subscriptionData);
 
-        setMessage(e.subscriptionData.data.notifications.message);
+        var { title, message, severity } = e.subscriptionData.data.notifications;
+
+        severity = severity.toLowerCase().replace('information', 'info');
+
+        setMessage({ title: title, message: message, severity: severity });
         setOpen(true);
     }
 
@@ -69,9 +73,10 @@ export function NotificationsEmitter() {
     const { loading, error, data } = useSubscription(
         gql`
           subscription onNotification {
-            notifications {
+            notifications(recipient: "${'johnaskew'}") {
               title
               message
+              severity
             }
           }
         `,
@@ -79,7 +84,12 @@ export function NotificationsEmitter() {
     );
 
     return (
-        <Snackbar open={open} onClose={handleClose} TransitionComponent={Slide} autoHideDuration={6000} message={ message } />
+        <Snackbar open={open} onClose={handleClose} TransitionComponent={Slide} autoHideDuration={6000}>
+            <Alert icon={false} severity={message.severity} onClose={handleClose}>
+                <AlertTitle>{message.title}</AlertTitle>
+                {message.message}
+            </Alert>
+        </Snackbar>
     );
 
 }

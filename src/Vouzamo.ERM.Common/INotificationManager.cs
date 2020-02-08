@@ -7,6 +7,6 @@ namespace Vouzamo.ERM.Common
     public interface INotificationManager
     {
         Task Notify(INotificationMessage message);
-        Task<IObservable<INotificationMessage>> MessagesAsync();
+        Task<IObservable<INotificationMessage>> MessagesAsync(string recipient);
     }
 }

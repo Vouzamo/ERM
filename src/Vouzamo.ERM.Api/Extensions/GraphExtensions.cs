@@ -90,6 +90,7 @@ namespace Vouzamo.ERM.Api.Extensions
 
             services.AddSingleton<TypeScopeEnumerationGraphType>();
             services.AddSingleton<DirectionEnumerationGraphType>();
+            services.AddSingleton<SeverityEnumerationGraphType>();
 
             services.AddSingleton<NotificationMessageGraphType>();
 

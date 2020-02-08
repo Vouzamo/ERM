@@ -15,9 +15,12 @@ namespace Vouzamo.ERM.Api.Graph
             AddField(new EventStreamFieldType
             {
                 Name = "notifications",
+                Arguments = new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "recipient" }
+                ),
                 Type = typeof(NotificationMessageGraphType),
                 Resolver = new FuncFieldResolver<INotificationMessage>(context => context.Source as INotificationMessage),
-                AsyncSubscriber = new AsyncEventStreamResolver<INotificationMessage>(context => manager.MessagesAsync())
+                AsyncSubscriber = new AsyncEventStreamResolver<INotificationMessage>(context => manager.MessagesAsync(context.GetArgument<string>("recipient")))
             });
         }
     }
