@@ -1,10 +1,12 @@
 ﻿import React, { useState, useContext } from 'react';
-import { globalContext } from '../GlobalContext';
 import { Auth } from 'aws-amplify';
+import { useSnackbar } from 'notistack';
 
-import { Container, CssBaseline, Avatar, Typography, TextField, FormControlLabel, Checkbox, Button, Grid, Link } from '@material-ui/core';
+import { Container, Avatar, Typography, TextField, FormControlLabel, Checkbox, Button, Grid, Link } from '@material-ui/core';
 import { LockOutlined as LockOutlinedIcon } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
+
+import { globalContext } from '../utils/GlobalContext';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -26,9 +28,10 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export default function Login() {
+export default function Unauthorized() {
 
     const { dispatch } = useContext(globalContext);
+    const { enqueueSnackbar } = useSnackbar();
 
     const classes = useStyles();
 
@@ -45,15 +48,13 @@ export default function Login() {
             .then(() => {
                 Auth.currentSession().then(session => {
                     dispatch({ type: 'SIGN_IN', token: session.idToken.jwtToken });
-                })
-                
+                });
             })
-            .catch(error => alert(error.message));
+            .catch(error => enqueueSnackbar(error.message, { variant: 'error' }));
     }
 
     return (
-        <Container component="main" maxWidth="xs">
-            <CssBaseline />
+        <Container maxWidth="xs">
             <div className={classes.paper}>
                 <Avatar className={classes.avatar}>
                     <LockOutlinedIcon />

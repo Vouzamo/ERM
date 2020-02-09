@@ -1,8 +1,6 @@
-﻿import React, { useState, useContext } from 'react';
+﻿import React, { useContext } from 'react';
 import gql from 'graphql-tag';
-import { globalContext } from '../GlobalContext';
-import { Snackbar, Slide, Typography } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import { useSnackbar } from 'notistack';
 import ApolloClient from "apollo-client";
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { split } from 'apollo-link';
@@ -11,12 +9,12 @@ import { HttpLink } from 'apollo-link-http';
 import { WebSocketLink } from 'apollo-link-ws';
 import { getMainDefinition } from 'apollo-utilities';
 
-export function NotificationsEmitter() {
+import { globalContext } from '../utils/GlobalContext';
+
+export default function NotificationsEmitter(props) {
 
     const { state } = useContext(globalContext);
-
-    const [open, setOpen] = useState(false);
-    const [message, setMessage] = useState({});
+    const { enqueueSnackbar } = useSnackbar();
 
     const httpLink = new HttpLink({
         uri: 'https://localhost:56432/graphql'
@@ -54,26 +52,17 @@ export function NotificationsEmitter() {
         
         console.log(e.subscriptionData);
 
-        var { title, message, severity } = e.subscriptionData.data.notifications;
+        var { message, severity } = e.subscriptionData.data.notifications;
 
-        severity = severity.toLowerCase().replace('information', 'info');
+        let variant = severity.toLowerCase();
 
-        setMessage({ title: title, message: message, severity: severity });
-        setOpen(true);
+        enqueueSnackbar(message, { variant });
     }
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-
-        setOpen(false);
-    };
 
     const { loading, error, data } = useSubscription(
         gql`
           subscription onNotification {
-            notifications(recipient: "${'johnaskew'}") {
+            notifications(recipient: "${'state.sessionId'}") {
               title
               message
               severity
@@ -84,12 +73,7 @@ export function NotificationsEmitter() {
     );
 
     return (
-        <Snackbar open={open} onClose={handleClose} TransitionComponent={Slide} autoHideDuration={6000}>
-            <Alert icon={false} severity={message.severity} onClose={handleClose}>
-                <AlertTitle>{message.title}</AlertTitle>
-                {message.message}
-            </Alert>
-        </Snackbar>
+        <>{ props.children }</>
     );
 
 }

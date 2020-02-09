@@ -1,20 +1,21 @@
 import React, { useContext } from 'react';
-import { globalContext } from '../GlobalContext';
-import { NotificationsEmitter } from './NotificationsEmitter';
-
+import { useSnackbar } from 'notistack';
 import { Typography, Button } from '@material-ui/core';
+
+import { globalContext } from '../utils/GlobalContext';
 
 export function Secure() {
 
     const { state } = useContext(globalContext);
+    const { enqueueSnackbar } = useSnackbar();
 
     const token = () => {
 
         if (state.authentication.isAuthenticated) {
-            alert(state.authentication.token);
+            enqueueSnackbar(state.authentication.token);
             console.log(state.authentication.token);
         } else {
-            alert('No token!');
+            enqueueSnackbar('No token!', { variant: 'error' });
         }
     }
 
@@ -22,7 +23,6 @@ export function Secure() {
         <>
             <Typography>Hello World</Typography>
             <Button variant="contained" color="primary" onClick={token}>Output Session</Button>
-            <NotificationsEmitter />
         </>
     );
 

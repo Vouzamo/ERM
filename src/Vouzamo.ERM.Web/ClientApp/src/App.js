@@ -1,14 +1,21 @@
 import React from 'react';
 import { Route } from 'react-router-dom';
-
-import { GlobalContextProvider } from './GlobalContext';
-
+import { SnackbarProvider } from 'notistack';
 import Amplify from 'aws-amplify';
+
+import Layout from './Layout';
+
+import { GlobalContextProvider } from './utils/GlobalContext';
+import NotificationsEmitter from './utils/NotificationsEmitter';
+
 import AuthenticatedRoute from './components/AuthenticatedRoute';
 
-import Layout from './components/Layout';
-import { Home } from './components/Home';
-import { Secure } from './components/Secure';
+import { Home } from './routes/Home';
+import { Secure } from './routes/Secure';
+import { Types } from './routes/Types';
+import { Nodes } from './routes/Nodes';
+import { Edges } from './routes/Edges';
+
 
 Amplify.configure({
     Auth: {
@@ -22,10 +29,17 @@ export default function App() {
 
     return (
         <GlobalContextProvider>
-            <Layout>
-                <Route path="/" exact component={Home} />
-                <AuthenticatedRoute path="/secure" exact component={Secure} />
-            </Layout>
+            <SnackbarProvider>
+                <NotificationsEmitter maxSnack={3} hideIconVariant>
+                    <Layout>
+                        <Route path="/" exact component={Home} />
+                        <AuthenticatedRoute path="/secure" exact component={Secure} />
+                        <AuthenticatedRoute path="/types" component={Types} />
+                        <AuthenticatedRoute path="/nodes" component={Nodes} />
+                        <AuthenticatedRoute path="/edges" component={Edges} />
+                    </Layout>
+                </NotificationsEmitter>
+            </SnackbarProvider>
         </GlobalContextProvider>
     );
 }
