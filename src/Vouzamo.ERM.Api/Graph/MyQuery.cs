@@ -16,19 +16,39 @@ namespace Vouzamo.ERM.Api.Graph
             Name = "Query";
             this.AuthorizeWith("Query");
 
-            FieldAsync<ListGraphType<NodeGraphType>>(
+            FieldAsync<BatchedResultsGraphType<Node, NodeGraphType>>(
                 name: "nodeSearch",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "query" },
-                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "take" },
-                    new QueryArgument<IntGraphType> { Name = "skip" }
+                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "size" },
+                    new QueryArgument<IntGraphType> { Name = "page" }
                 ),
                 resolve: async (context) => {
                     return await mediator.Send(
                         new NodesBySearchQuery(
                             context.GetArgument<string>("query"),
-                            context.GetArgument<int>("take"),
-                            context.GetArgument<int?>("skip").GetValueOrDefault(0)
+                            context.GetArgument<int>("size"),
+                            context.GetArgument<int?>("page").GetValueOrDefault(1)
+                        )
+                    );
+                }
+            );
+
+            FieldAsync<BatchedResultsGraphType<Common.Type, TypeGraphType>>(
+                name: "typeSearch",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<StringGraphType>> { Name = "query" },
+                    new QueryArgument<TypeScopeEnumerationGraphType> { Name = "scope" },
+                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "size" },
+                    new QueryArgument<IntGraphType> { Name = "page" }
+                ),
+                resolve: async (context) => {
+                    return await mediator.Send(
+                        new TypesBySearchQuery(
+                            context.GetArgument<string>("query"),
+                            context.GetArgument<TypeScope?>("scope"),
+                            context.GetArgument<int>("size"),
+                            context.GetArgument<int?>("page").GetValueOrDefault(1)
                         )
                     );
                 }

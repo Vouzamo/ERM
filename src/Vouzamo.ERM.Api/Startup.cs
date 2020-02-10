@@ -58,6 +58,12 @@ namespace Vouzamo.ERM.Api
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseCors(policy => policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+            );
+
             app.UseAuthentication();
 
             app.UseGraph();

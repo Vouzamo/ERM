@@ -1,7 +1,5 @@
 ﻿using MediatR;
 using Nest;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Vouzamo.ERM.Common;
@@ -9,7 +7,7 @@ using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
 {
-    public class NodesBySearchQueryHandler : IRequestHandler<NodesBySearchQuery, IEnumerable<Node>>
+    public class NodesBySearchQueryHandler : IRequestHandler<NodesBySearchQuery, BatchedResults<Node>>
     {
         protected IElasticClient Client { get; }
 
@@ -18,7 +16,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
             Client = client;
         }
 
-        public async Task<IEnumerable<Node>> Handle(NodesBySearchQuery request, CancellationToken cancellationToken)
+        public async Task<BatchedResults<Node>> Handle(NodesBySearchQuery request, CancellationToken cancellationToken)
         {
             var response = await Client.SearchAsync<Node>(descriptor => descriptor
                 .Query(q => q
@@ -30,8 +28,8 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
                         .Query(request.Query)
                     )
                 )
-                .Skip(request.Skip)
-                .Size(request.Take)
+                .Skip((request.Page - 1) * request.Size)
+                .Take(request.Size)
                 , cancellationToken
             );
 
@@ -40,7 +38,7 @@ namespace Vouzamo.ERM.Providers.Elasticsearch.Handlers.Query
                 throw response.OriginalException;
             }
 
-            return response.Documents;
+            return new BatchedResults<Node>(response.Documents, response.Total, request.Size, request.Page);
         }
     }
 }

@@ -8,7 +8,8 @@ const uuid = () => {
 
 const initialState = {
     authentication: {
-        isAuthenticated: false
+        isAuthenticated: false,
+        token: ''
     },
     sessionId: uuid()
 };
@@ -27,7 +28,8 @@ const reducer = (state, action) => {
             return { ...state, authentication: authentication };
         case 'SIGN_OUT':
             var authentication = {
-                isAuthenticated: false
+                isAuthenticated: false,
+                token: ''
             };
             return { ...state, authentication: authentication };
         default:
