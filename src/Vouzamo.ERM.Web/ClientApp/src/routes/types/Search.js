@@ -1,10 +1,30 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import { Container, Typography, CircularProgress } from '@material-ui/core';
+import { Grid, Typography, Fab, Backdrop, CircularProgress, makeStyles } from '@material-ui/core';
+import { Add as AddIcon } from '@material-ui/icons';
 import { Pagination } from '@material-ui/lab';
 
-export function Types() {
+import { TypeCard } from '../../components/Cards';
+
+const useStyles = makeStyles(theme => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
+    card: {
+        margin: theme.spacing(1)
+    },
+    fab: {
+        position: 'absolute',
+        bottom: theme.spacing(2),
+        right: theme.spacing(2),
+    }
+}));
+
+export function Search() {
+
+    const classes = useStyles();
 
     const [query, setQuery] = useState("");
     const [scope, setScope] = useState();
@@ -22,6 +42,7 @@ export function Types() {
                 results {
                   id
                   name
+                  scope
                 }
             }
         }
@@ -55,12 +76,16 @@ export function Types() {
         variables: { query, scope, size, page }
     });
 
-    if (loading) return (<CircularProgress />);
     if (error) return `Error! ${error.message}`;
 
     return (
-        <Container>
+        <>
+            <Backdrop className={classes.backdrop} open={loading}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
+
             <Typography>Types</Typography>
+
             <input defaultValue={query} onBlur={handleChangeQuery} />
             <select value={scope} onChange={handleChangeScope}>
                 <option value="">Any</option>
@@ -70,18 +95,24 @@ export function Types() {
             </select>
             <button onClick={() => refetch()}>Search</button>
 
-            { data &&
+            {data &&
                 <>
                     <Pagination count={calculateTotalPages(size, data.search.totalCount)} page={page} onChange={handlePagination} />
-                    {data.search.results.map((result, i) => {
-                        return (
-                            <Typography key={i}>{result.id} {result.name}</Typography>
-                        );
-                    })}
+                    <Grid>
+                        {data.search.results.map((result) => {
+                            return (
+                                <TypeCard key={result.id} source={result} className={classes.card} />
+                            );
+                        })}
+                    </Grid>
                 </>
             }
 
-        </Container>
+            <Fab className={classes.fab} color="primary" aria-label="add">
+                <AddIcon />
+            </Fab>
+
+        </>
     );
 
 }

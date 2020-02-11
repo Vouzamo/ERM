@@ -18,13 +18,27 @@ import AuthenticatedRoute from './components/AuthenticatedRoute';
 
 import { Home } from './routes/Home';
 import { Secure } from './routes/Secure';
-import { Types } from './routes/Types';
+import Types from './routes/types/Default';
 import { Nodes } from './routes/Nodes';
 import { Edges } from './routes/Edges';
 
+import Amplify, { Auth } from 'aws-amplify';
+
+Amplify.configure({
+    Auth: {
+        region: 'us-east-1',
+        userPoolId: 'us-east-1_6u0RWKWaV',
+        userPoolWebClientId: '3gqq1t3c01f55dd02srt13le9l'
+    }
+});
+
 export default function AppInner() {
 
-    const { state } = useContext(globalContext);
+    const { state, dispatch } = useContext(globalContext);
+
+    //Auth.currentSession()
+    //    .then(session => dispatch({ type: 'SIGN_IN', token: session.idToken.jwtToken }))
+    //    .error(error => console.log(error));
 
     const httpLink = new HttpLink({
         uri: 'https://localhost:44328/graphql',
@@ -57,7 +71,6 @@ export default function AppInner() {
         link: link,
         cache: new InMemoryCache()
     });
-
 
     return (
         <ApolloProvider client={client}>
