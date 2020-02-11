@@ -40,15 +40,17 @@ export default function AppInner() {
     //    .then(session => dispatch({ type: 'SIGN_IN', token: session.idToken.jwtToken }))
     //    .error(error => console.log(error));
 
+    // HTTPS localhost:44328
     const httpLink = new HttpLink({
-        uri: 'https://localhost:44328/graphql',
+        uri: `https://${state.server}:44328/graphql`,
         headers: {
             Authorization: `Bearer ${state.authentication.token ?? ''}`
         }
     });
 
+    // HTTP localhost:56432
     const wsLink = new WebSocketLink({
-        uri: 'ws://localhost:56432/graphql',
+        uri: `ws://${state.server}:56432/graphql`,
         options: {
             reconnect: true
         }

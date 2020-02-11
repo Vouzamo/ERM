@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { Auth } from 'aws-amplify';
-import { makeStyles, CssBaseline, Drawer, Container, AppBar, Toolbar, IconButton, Typography, Menu, MenuItem, List, ListItem, ListItemText, Divider } from '@material-ui/core';
+import { makeStyles, CssBaseline, TextField, Breadcrumbs, Link, Drawer, Container, AppBar, Toolbar, IconButton, Typography, Menu, MenuItem, List, ListItem, ListItemText, Divider } from '@material-ui/core';
 import { Menu as MenuIcon, AccountCircle as AccountCircleIcon } from '@material-ui/icons';
 
 import { globalContext } from './utils/GlobalContext';
@@ -16,12 +16,38 @@ const useStyles = makeStyles(theme => ({
     title: {
         flexGrow: 1,
     },
+    input: {
+        color: 'white',
+        borderColor: 'white'
+    },
     list: {
         width: 250,
     }
 }));
 
 export default function Layout(props) {
+
+    const { pathname } = useLocation();
+
+    const generateCrumbs = () => {
+
+        let parts = pathname.split('/');
+
+        let crumbs = [{ text: 'HOME', link: '/', isLast: false }];
+
+        for (var i = 1; i < parts.length; i++) {
+
+            var part = parts[i];
+
+            var text = part.toUpperCase();
+            var link = parts.slice(0, i + 1).join('/');
+
+            crumbs.push({ text, link, isLast: (i == parts.length - 1) });
+        }
+
+        return crumbs;
+
+    }
 
     const classes = useStyles();
 
@@ -65,6 +91,7 @@ export default function Layout(props) {
                     <Typography variant="h6" className={classes.title}>
                         Vouzamo: ERM
                     </Typography>
+                    <TextField InputProps={{className: classes.input}} defaultValue={state.server} onBlur={(e) => dispatch({ type: 'SET_SERVER', server: e.target.value })} />
                     {state.authentication.isAuthenticated && (
                         <div>
                             <IconButton aria-label="account of current user" aria-controls="menu-appbar" aria-haspopup="true" onClick={handleMenu} color="inherit">
@@ -117,6 +144,15 @@ export default function Layout(props) {
             </Drawer>
             <Container component="main">
                 <CssBaseline />
+                <Breadcrumbs aria-label="breadcrumb">
+                    {generateCrumbs().map((crumb, i) => {
+                        return crumb.isLast ? (
+                            <Typography key={i} color="textPrimary">{crumb.text}</Typography>
+                        ) : (
+                            <Link key={i} component={RouterLink} color="inherit" to={crumb.link}>{crumb.text}</Link>
+                        );
+                    })}
+                </Breadcrumbs>
                 {props.children}
             </Container>
         </div>

@@ -1,11 +1,12 @@
 ﻿import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
-import { Grid, Typography, Fab, Backdrop, CircularProgress, makeStyles } from '@material-ui/core';
+import { Grid, Typography, Fab, Backdrop, CircularProgress, Button, makeStyles } from '@material-ui/core';
 import { Add as AddIcon } from '@material-ui/icons';
 import { Pagination } from '@material-ui/lab';
 
 import { TypeCard } from '../../components/Cards';
+import { AddTypeDialog } from '../../components/Dialogs';
 
 const useStyles = makeStyles(theme => ({
     backdrop: {
@@ -25,6 +26,8 @@ const useStyles = makeStyles(theme => ({
 export function Search() {
 
     const classes = useStyles();
+
+    const [addOpen, setAddOpen] = useState(false);
 
     const [query, setQuery] = useState("");
     const [scope, setScope] = useState();
@@ -76,7 +79,13 @@ export function Search() {
         variables: { query, scope, size, page }
     });
 
-    if (error) return `Error! ${error.message}`;
+    if (error) {
+
+        // enqueueAlert
+
+        return <Button onClick={refetch}>Retry</Button>;
+
+    }
 
     return (
         <>
@@ -108,7 +117,9 @@ export function Search() {
                 </>
             }
 
-            <Fab className={classes.fab} color="primary" aria-label="add">
+            <AddTypeDialog open={addOpen} onClose={() => setAddOpen(false)} />
+
+            <Fab className={classes.fab} color="primary" aria-label="add" onClick={() => setAddOpen(true)}>
                 <AddIcon />
             </Fab>
 

@@ -11,6 +11,7 @@ const initialState = {
         isAuthenticated: false,
         token: ''
     },
+    server: 'localhost',
     sessionId: uuid()
 };
 
@@ -32,6 +33,8 @@ const reducer = (state, action) => {
                 token: ''
             };
             return { ...state, authentication: authentication };
+        case 'SET_SERVER':
+            return { ...state, server: action.server }
         default:
             return state;
     };
