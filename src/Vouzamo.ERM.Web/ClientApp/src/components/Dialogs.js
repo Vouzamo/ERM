@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { useHistory } from "react-router-dom";
-import { makeStyles, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
+import { makeStyles, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControlLabel, Switch, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 
@@ -11,7 +11,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export function AddTypeDialog(props) {
+export function AddTypeDialog({ open, onClose }) {
 
     const classes = useStyles();
     const history = useHistory();
@@ -33,7 +33,7 @@ export function AddTypeDialog(props) {
         {
             onCompleted: (data) => {
 
-                props.onClose();
+                onClose();
 
                 history.push(`/types/${data.types.added.id}`);
 
@@ -57,7 +57,7 @@ export function AddTypeDialog(props) {
             <Backdrop className={classes.backdrop} open={loading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
-            <Dialog open={props.open} onClose={props.onClose} aria-labelledby="form-dialog-title">
+            <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Add Type</DialogTitle>
                 <DialogContent>
                     <DialogContentText>Provide a name and the desired scope for your new type.</DialogContentText>
@@ -79,11 +79,66 @@ export function AddTypeDialog(props) {
                     </Select>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={props.onClose} color="secondary">Cancel</Button>
+                    <Button onClick={onClose} color="secondary">Cancel</Button>
                     <Button onClick={handleConfirm} color="primary">Confirm</Button>
                 </DialogActions>
             </Dialog>
         </>
+    );
+
+}
+
+export function AddFieldDialog({ open, onConfirm, onClose }) {
+
+    const [key, setKey] = useState("");
+    const [name, setName] = useState("");
+    const [type, setType] = useState("string");
+    const [mandatory, setMandatory] = useState(false);
+    const [enumerable, setEnumerable] = useState(false);
+    const [localizable, setLocalizable] = useState(true);
+
+    return (
+
+        <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Add Field</DialogTitle>
+            <DialogContent>
+                <DialogContentText>Provide a unique key, display name, and type for your new field.</DialogContentText>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="key"
+                    label="Key"
+                    type="text"
+                    fullWidth
+                    value={key}
+                    onChange={(e) => setKey(e.target.value)}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="name"
+                    label="Name"
+                    type="text"
+                    fullWidth
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+                <InputLabel id="type-select-label">Type</InputLabel>
+                <Select margin="dense" id="type" labelId="type-select-label" fullWidth value={type} onChange={(e) => setType(e.target.value)}>
+                    <MenuItem value={'string'}>String</MenuItem>
+                    <MenuItem value={'integer'}>Integer</MenuItem>
+                    <MenuItem value={'boolean'}>Boolean</MenuItem>
+                </Select>
+                <FormControlLabel label="Mandatory" control={<Switch checked={mandatory} onChange={() => setMandatory(!mandatory)} value={true} />} />
+                <FormControlLabel label="Enumerable" control={<Switch checked={enumerable} onChange={() => setEnumerable(!enumerable)} value={true} />} />
+                <FormControlLabel label="Localizable" control={<Switch checked={localizable} onChange={() => setLocalizable(!localizable)} value={true} />} />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose} color="secondary">Cancel</Button>
+                <Button onClick={() => onConfirm({ key, name, type, mandatory, enumerable, localizable })} color="primary">Confirm</Button>
+            </DialogActions>
+        </Dialog>
+
     );
 
 }

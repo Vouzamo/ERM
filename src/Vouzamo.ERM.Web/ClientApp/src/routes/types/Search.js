@@ -1,6 +1,7 @@
 ﻿import React, { useState } from 'react';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
+import { useSnackbar } from 'notistack';
 import { Grid, Typography, Fab, Backdrop, CircularProgress, Button, makeStyles } from '@material-ui/core';
 import { Add as AddIcon } from '@material-ui/icons';
 import { Pagination } from '@material-ui/lab';
@@ -25,6 +26,7 @@ const useStyles = makeStyles(theme => ({
 
 export function Search() {
 
+    const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
 
     const [addOpen, setAddOpen] = useState(false);
@@ -75,15 +77,17 @@ export function Search() {
         return totalPages;
     }
 
-    const { loading, error, data, refetch } = useQuery(QUERY, {
-        variables: { query, scope, size, page }
-    });
+    const { loading, error, data, refetch } = useQuery(QUERY,
+        {
+            variables: { query, scope, size, page },
+        }
+    );
 
     if (error) {
 
-        // enqueueAlert
+        enqueueSnackbar(error.message, { variant: 'error' });
 
-        return <Button onClick={refetch}>Retry</Button>;
+        return null;
 
     }
 

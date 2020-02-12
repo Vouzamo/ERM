@@ -22,17 +22,17 @@ const { Provider } = globalContext;
 const reducer = (state, action) => {
     switch (action.type) {
         case 'SIGN_IN':
-            var authentication = {
-                isAuthenticated: true,
-                token: action.token
-            };
-            return { ...state, authentication: authentication };
+            return {
+                ...state, authentication: {
+                    isAuthenticated: true,
+                    token: action.token
+                } };
         case 'SIGN_OUT':
-            var authentication = {
-                isAuthenticated: false,
-                token: ''
-            };
-            return { ...state, authentication: authentication };
+            return {
+                ...state, authentication: {
+                    isAuthenticated: false,
+                    token: ''
+                } };
         case 'SET_SERVER':
             return { ...state, server: action.server }
         default:
