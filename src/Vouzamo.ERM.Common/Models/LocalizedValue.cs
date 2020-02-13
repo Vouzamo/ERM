@@ -6,4 +6,9 @@ namespace Vouzamo.ERM.Common
     {
 
     }
+
+    public class LocalizedValue<T> : Dictionary<string, T>
+    {
+
+    }
 }

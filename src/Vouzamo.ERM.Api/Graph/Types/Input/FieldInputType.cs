@@ -32,6 +32,9 @@ namespace Vouzamo.ERM.Api.Graph.Types.Input
             // type: int
             Field(field => field.MinValue, true);
             Field(field => field.MaxValue, true);
+
+            // type: nested
+            Field(field => field.TypeId, true);
         }
     }
 }

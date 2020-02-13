@@ -20,5 +20,8 @@ namespace Vouzamo.ERM.DTOs
         // int
         public int MinValue { get; set; }
         public int MaxValue { get; set; }
+
+        // nested
+        public Guid? TypeId { get; set; }
     }
 }

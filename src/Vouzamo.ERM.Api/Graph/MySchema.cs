@@ -15,6 +15,7 @@ namespace Vouzamo.ERM.Api.Graph
 
             RegisterType<StringFieldGraphType>();
             RegisterType<IntegerFieldGraphType>();
+            RegisterType<NestedFieldGraphType>();
 
             RegisterValueConverter(new JsonGraphTypeConverter());
         }

@@ -14,14 +14,4 @@ namespace Vouzamo.ERM.CQRS
             Ids = ids;
         }
     }
-
-    public class ByIdQuery<T> : IRequest<T> where T : IIdentifiable<Guid>
-    {
-        public Guid Id { get; }
-
-        public ByIdQuery(Guid id)
-        {
-            Id = id;
-        }
-    }
 }

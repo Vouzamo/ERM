@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Vouzamo.ERM.Common.Converters;
-using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.Common.Models.Validation;
-using Vouzamo.ERM.Common.Serialization;
 
 namespace Vouzamo.ERM.Common
 {
@@ -24,16 +21,13 @@ namespace Vouzamo.ERM.Common
         {
             Mandatory = false;
             Enumerable = false;
-            Localizable = true;
+            Localizable = false;
         }
 
-        public Field(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = false) : this()
+        public Field(string key, string name) : this()
         {
             Key = key;
             Name = name;
-            Mandatory = mandatory;
-            Enumerable = enumerable;
-            Localizable = localizable;
         }
 
         public abstract IValidationResult Validate(object value, IConverter converter);
@@ -114,7 +108,7 @@ namespace Vouzamo.ERM.Common
 
         }
 
-        public Field(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = true) : base(key, name, mandatory, enumerable, localizable)
+        public Field(string key, string name) : base(key, name)
         {
 
         }

@@ -36,6 +36,7 @@ namespace Vouzamo.ERM.Common.Serialization
                     {
                         case "string": return JsonSerializer.Deserialize<StringField>(root.GetRawText(), options);
                         case "int": return JsonSerializer.Deserialize<IntegerField>(root.GetRawText(), options);
+                        case "nested": return JsonSerializer.Deserialize<NestedField>(root.GetRawText(), options);
                     };
                 }
             }

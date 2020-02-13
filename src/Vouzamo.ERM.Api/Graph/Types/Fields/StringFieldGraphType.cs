@@ -1,5 +1,4 @@
-﻿using GraphQL.Types;
-using Vouzamo.ERM.Common;
+﻿using Vouzamo.ERM.Common;
 
 namespace Vouzamo.ERM.Api.Graph.Types.Fields
 {

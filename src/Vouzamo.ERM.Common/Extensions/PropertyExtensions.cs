@@ -9,123 +9,43 @@ namespace Vouzamo.ERM.Common.Extensions
 {
     public static class PropertyExtensions
     {
-        public static IDictionary<string, object> AsValues(this Editor editor)
-        {
-            var values = new Dictionary<string, object>();
+        //public static IEnumerable<IValidationResult> ValidateProperties(this IEnumerable<PropertyEditor> editors, IDictionary<string, LocalizedValue> source, string localization, IEnumerable<string> localizationChain, IConverter converter, IDictionary<string, object> props) 
+        //{
+        //    foreach (var editor in editors)
+        //    {
+        //        var key = editor.Field.Key;
 
-            foreach(var propertyEditor in editor.Editors)
-            {
-                var value = propertyEditor.Value;
+        //        if (!source.ContainsKey(key))
+        //        {
+        //            source.Add(key, new LocalizedValue());
+        //        }
 
-                if(!propertyEditor.HasValue)
-                {
-                    if(propertyEditor.Field.Localizable)
-                    {
-                        value = propertyEditor.Fallback;
-                    }
-                }
+        //        if (editor.ReadOnly || !props.ContainsKey(key))
+        //        {
+        //            source[key].Remove(localization);
+        //        }
+        //        else
+        //        {
+        //            source[key][localization] = props[key];
+        //        }
 
-                values.Add(propertyEditor.Field.Key, value);
-            }
+        //        if (source[key].TryGetLocalizedValue(localizationChain, out var value))
+        //        {
+        //            yield return editor.Field.Validate(value, converter);
+        //        }
+        //        else
+        //        {
+        //            var mandatoryResult = new ValueValidationResult(!editor.Field.Mandatory);
 
-            return values;
-        }
+        //            if (!mandatoryResult.Valid)
+        //            {
+        //                mandatoryResult.Messages.Add(new PropertyErrorValidationMessage(editor.Field.Key, $"Mandatory fields must provide a default value"));
+        //            }
 
-        public static Editor AsEditor(this IEnumerable<Field> fields, IDictionary<string, LocalizedValue> properties, IEnumerable<string> localizationChain)
-        {
-            var editors = new List<PropertyEditor>();
-
-            var localization = localizationChain.First();
-
-            var fallbacks = localizationChain.Count() > 1 ? Localize(properties, localizationChain.Skip(1)) : new Dictionary<string, object>();
-
-            foreach(var field in fields)
-            {
-                var localizedValue = properties.ValueOrDefault(field.Key, new LocalizedValue());
-
-                var editor = new PropertyEditor(field, localization, localizedValue);
-
-                if(field.Localizable && fallbacks.TryGetValue(field.Key, out var fallback))
-                {
-                    editor.Fallback = fallback;
-                }
-                
-                editors.Add(editor);
-            }
-
-            return new Editor(localization, editors);
-        }
-
-        public static IDictionary<string, object> Localize(this IDictionary<string, LocalizedValue> properties, IEnumerable<string> localizationHierarchy = default)
-        {
-            if(localizationHierarchy == default || !localizationHierarchy.Any())
-            {
-                localizationHierarchy = new List<string> { Constants.DefaultLocalization };
-            }
-
-            var localized = new Dictionary<string, object>();
-
-            foreach(var kvp in properties)
-            {
-                if(properties.TryGetValue(kvp.Key, out var localizedProperty))
-                {
-                    if(localizedProperty.TryGetLocalizedValue(localizationHierarchy, out var value))
-                    {
-                        localized.Add(kvp.Key, value);
-                    }
-                }
-            }
-
-            return localized;
-        }
-
-        /// <summary>
-        /// This extension method has too many dependencies. Consider refactor...
-        /// </summary>
-        /// <param name="editors"></param>
-        /// <param name="source"></param>
-        /// <param name="localization"></param>
-        /// <param name="localizationChain"></param>
-        /// <param name="converter"></param>
-        /// <param name="props"></param>
-        /// <returns></returns>
-        public static IEnumerable<IValidationResult> ValidateProperties(this IEnumerable<PropertyEditor> editors, IHasProperties<LocalizedValue> source, string localization, IEnumerable<string> localizationChain, IConverter converter, IDictionary<string, object> props) 
-        {
-            foreach (var editor in editors)
-            {
-                var key = editor.Field.Key;
-
-                if (!source.Properties.ContainsKey(key))
-                {
-                    source.Properties.Add(key, new LocalizedValue());
-                }
-
-                if (editor.ReadOnly || !props.ContainsKey(key))
-                {
-                    source.Properties[key].Remove(localization);
-                }
-                else
-                {
-                    source.Properties[key][localization] = props[key];
-                }
-
-                if (source.Properties[key].TryGetLocalizedValue(localizationChain, out var value))
-                {
-                    yield return editor.Field.Validate(value, converter);
-                }
-                else
-                {
-                    var mandatoryResult = new ValueValidationResult(!editor.Field.Mandatory);
-
-                    if (!mandatoryResult.Valid)
-                    {
-                        mandatoryResult.Messages.Add(new PropertyErrorValidationMessage(editor.Field.Key, $"Mandatory fields must provide a default value"));
-                    }
-
-                    yield return mandatoryResult;
-                }
-            }
-        }
+        //            yield return mandatoryResult;
+        //        }
+        //    }
+        //}
 
         public static bool TryGetLocalizedValue(this LocalizedValue localized, IEnumerable<string> localizationHierarchy, out object value)
         {

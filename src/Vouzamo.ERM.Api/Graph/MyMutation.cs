@@ -17,6 +17,7 @@ using Vouzamo.ERM.Common.Models.Validation;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.CQRS.Command;
 using Vouzamo.ERM.DTOs;
+using Vouzamo.ERM.CQRS.Extensions;
 
 namespace Vouzamo.ERM.Api.Graph
 {
@@ -96,6 +97,7 @@ namespace Vouzamo.ERM.Api.Graph
                     var results = new List<IValidationResult>();
 
                     var localizationHierarchy = await mediator.Send(new LocalizationHierarchyCommand());
+                    var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
                     var node = await mediator.Send(new ByIdQuery<Node>(id));
 
@@ -106,11 +108,15 @@ namespace Vouzamo.ERM.Api.Graph
 
                     if (nodeTypes.TryGetValue(node.Type, out var nodeType))
                     {
-                        var localizationChain = localizationHierarchy.FindDependencyChain(localization);
+                        var fieldHierarchy = await mediator.Send(new ExpandFieldsCommand(nodeType));
 
-                        var editor = nodeType.Fields.AsEditor(node.Properties, localizationChain);
+                        // merge properties with node.properties before launching an editor
 
-                        results.AddRange(editor.Editors.ValidateProperties(node, localization, localizationChain, converter, properties));
+                        var editor = fieldHierarchy.ToEditors(node.Properties, localizationChain);
+
+                        // editor should be able to emit an IValidationResult that can be used for 
+
+                        //results.AddRange(editor.ValidateProperties(node.Properties, localization, localizationChain, converter, properties));
                     }
 
                     var result = new AggregateValidationResult(results);

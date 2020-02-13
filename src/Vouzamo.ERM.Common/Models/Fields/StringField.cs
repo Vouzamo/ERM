@@ -12,7 +12,7 @@
 
         }
 
-        public StringField(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = true) : base(key, name, mandatory, enumerable, localizable)
+        public StringField(string key, string name) : base(key, name)
         {
 
         }

@@ -4,6 +4,6 @@
     {
         Nodes,
         Edges,
-        Both
+        Types
     }
 }

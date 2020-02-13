@@ -85,6 +85,7 @@ namespace Vouzamo.ERM.Api.Extensions
             services.AddSingleton<FieldInterface>();
             services.AddSingleton<StringFieldGraphType>();
             services.AddSingleton<IntegerFieldGraphType>();
+            services.AddSingleton<NestedFieldGraphType>();
 
             services.AddSingleton<FieldInputType>();
 

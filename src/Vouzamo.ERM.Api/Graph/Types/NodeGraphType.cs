@@ -2,13 +2,12 @@
 using GraphQL.Types;
 using MediatR;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
-using Vouzamo.ERM.Common.Extensions;
+using Vouzamo.ERM.CQRS.Extensions;
 using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.CQRS;
+using Vouzamo.ERM.Common.Extensions;
 
 namespace Vouzamo.ERM.Api.Graph.Types
 {
@@ -16,8 +15,9 @@ namespace Vouzamo.ERM.Api.Graph.Types
     {
         public EditorGraphType()
         {
+            Field<ListGraphType<StringGraphType>>("localizationChain", resolve: context => context.Source.LocalizationChain);
             Field<ListGraphType<JsonGraphType>>("editors", resolve: context => context.Source.Editors);
-            Field<JsonGraphType>("values", resolve: context => context.Source.AsValues());
+            Field<JsonGraphType>("output", resolve: context => context.Source.BuildObject());
         }
     }
 
@@ -40,8 +40,9 @@ namespace Vouzamo.ERM.Api.Graph.Types
                     var localizationChain = localizationHierarchy.FindDependencyChain(localization);
 
                     var type = await mediator.Send(new ByIdQuery<Common.Type>(context.Source.Type));
+                    var fields = await mediator.Send(new ExpandFieldsCommand(type));
 
-                    var editor = type.Fields.AsEditor(context.Source.Properties, localizationChain);
+                    var editor = fields.ToEditor(context.Source.Properties, localizationChain);
 
                     return editor;
                 }

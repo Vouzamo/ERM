@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public static string DefaultLocalization => "default";
+        public const string DefaultLocalization = "default";
     }
 }

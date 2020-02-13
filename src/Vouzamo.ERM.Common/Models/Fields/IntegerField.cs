@@ -15,7 +15,7 @@ namespace Vouzamo.ERM.Common
 
         }
 
-        public IntegerField(string key, string name, bool mandatory = false, bool enumerable = false, bool localizable = true) : base(key, name, mandatory, enumerable, localizable)
+        public IntegerField(string key, string name) : base(key, name)
         {
 
         }
