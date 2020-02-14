@@ -1,12 +1,24 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
 
-import { Container, Grid, makeStyles, Card, CardHeader, CardContent, Typography, Button } from '@material-ui/core';
-import { Add as AddIcon, Save as SaveIcon } from '@material-ui/icons';
+import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Card, CardHeader, CardContent, Typography, Button } from '@material-ui/core';
+import { Add as AddIcon, Save as SaveIcon, ExpandMore as ExpandMoreIcon } from '@material-ui/icons';
 
 import { AddFieldDialog } from './Dialogs';
 
 const useStyles = makeStyles(theme => ({
+    panel: {
+        width: '100%',
+    },
+    heading: {
+        fontSize: theme.typography.pxToRem(15),
+        flexBasis: '33.33%',
+        flexShrink: 0,
+    },
+    secondaryHeading: {
+        fontSize: theme.typography.pxToRem(15),
+        color: theme.palette.text.secondary,
+    },
     actions: {
         display: 'flex',
         justifyContent: 'space-between'
@@ -46,8 +58,13 @@ export function FieldsEditor({ owner, fields, onSave }) {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
 
+    const [expanded, setExpanded] = React.useState(false);
     const [addOpen, setAddOpen] = useState(false);
     const [state, setState] = useState(fields);
+
+    const handleChange = panel => (event, isExpanded) => {
+        setExpanded(isExpanded ? panel : false);
+    };
 
     const addField = (field) => {
         let fields = state;
@@ -57,8 +74,8 @@ export function FieldsEditor({ owner, fields, onSave }) {
         } else {
             fields.push(field);
 
+            setExpanded(field.key);
             setState(fields);
-
             setAddOpen(false);
         }
     }
@@ -76,7 +93,17 @@ export function FieldsEditor({ owner, fields, onSave }) {
             }
 
             {state.map((field) => {
-                return <FieldEditor key={field.key} owner={owner} field={field} />
+                return (
+                    <ExpansionPanel className={classes.panel} key={field.key} expanded={expanded === field.key} onChange={handleChange(field.key)}>
+                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
+                            <Typography className={classes.heading}>{field.name}</Typography>
+                            <Typography className={classes.secondaryHeading}>{field.type}{field.enumerable ? '[]' : ''}{field.mandatory ? '*' : ''}</Typography>
+                        </ExpansionPanelSummary>
+                        <ExpansionPanelDetails>
+                            <FieldEditor owner={owner} field={field} />
+                        </ExpansionPanelDetails>
+                    </ExpansionPanel>
+                );
             })}
 
             <AddFieldDialog open={addOpen} onConfirm={(field) => { addField(field); }} onClose={() => setAddOpen(false)} />
@@ -100,14 +127,7 @@ export function FieldEditor({ owner, field }) {
 
     return (
 
-        <Card>
-            <CardHeader title={field.name} subheader={field.key} />
-            <CardContent>
-                <Typography variant="body2" color="textSecondary" component="p">
-                    You should be able to edit all aspects of a field here
-                </Typography>
-            </CardContent>
-        </Card>
+        <Typography>Form goes here</Typography>
         
     );
 
