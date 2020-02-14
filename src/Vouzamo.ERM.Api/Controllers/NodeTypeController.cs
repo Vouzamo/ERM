@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.CQRS;
-using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Api.Controllers
 {
@@ -50,9 +48,9 @@ namespace Vouzamo.ERM.Api.Controllers
         }
 
         [HttpPost("{id}/fields")]
-        public async Task<ActionResult> PostField(Guid id, [FromBody] FieldDTO field)
+        public async Task<ActionResult> PostField(Guid id, [FromBody] List<Field> fields)
         {
-            var response = await Mediator.Send(new AddFieldCommand<Common.Type>(id, field));
+            var response = await Mediator.Send(new UpdateFieldsCommand<Common.Type>(id, fields));
 
             return Accepted(response);
         }
