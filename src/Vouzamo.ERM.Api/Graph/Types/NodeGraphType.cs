@@ -8,6 +8,7 @@ using Vouzamo.ERM.CQRS.Extensions;
 using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.Common.Extensions;
+using GraphQL;
 
 namespace Vouzamo.ERM.Api.Graph.Types
 {

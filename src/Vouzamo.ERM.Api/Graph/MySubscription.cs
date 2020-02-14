@@ -1,4 +1,5 @@
-﻿using GraphQL.Resolvers;
+﻿using GraphQL;
+using GraphQL.Resolvers;
 using GraphQL.Types;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Common;

@@ -1,20 +1,18 @@
-﻿using GraphQL.Types;
+﻿using GraphQL;
+using GraphQL.Types;
 using MediatR;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
+using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.CQRS.Command;
-using Vouzamo.ERM.DTOs;
 
 namespace Vouzamo.ERM.Api.Graph.Types.Groups
 {
     public class TypeMutationsGraphType : ObjectGraphType
     {
-        public TypeMutationsGraphType(IMediator mediator)
+        public TypeMutationsGraphType(IMediator mediator, IConverter converter)
         {
             Name = "Types";
 
@@ -50,18 +48,20 @@ namespace Vouzamo.ERM.Api.Graph.Types.Groups
                 }
             );
 
-            FieldAsync<BooleanGraphType>(
-                "addField",
+            FieldAsync<TypeGraphType>(
+                "updateFields",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },
-                    new QueryArgument<NonNullGraphType<FieldInputType>> { Name = "field" }
+                    new QueryArgument<ListGraphType<JsonGraphType>> { Name = "fields" }
                 ),
                 resolve: async context =>
                 {
                     var id = context.GetArgument<Guid>("id");
-                    var field = context.GetArgument<FieldDTO>("field");
+                    var raw = context.GetArgument<List<object>>("fields");
 
-                    return await mediator.Send(new AddFieldCommand<Common.Type>(id, field));
+                    var fields = converter.Convert<List<object>, List<Field>>(raw);
+
+                    return await mediator.Send(new UpdateFieldsCommand<Common.Type>(id, fields));
                 }
             );
         }

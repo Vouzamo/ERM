@@ -2,7 +2,6 @@
 using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Server.Internal;
-using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Server.Ui.Playground;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -14,7 +13,6 @@ using System;
 using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Api.Handlers;
 using Vouzamo.ERM.Common.Exceptions;
 using Vouzamo.ERM.CQRS;
@@ -59,7 +57,6 @@ namespace Vouzamo.ERM.Api.Extensions
             {
                 options.EnableMetrics = false;
                 options.ExposeExceptions = false;
-                options.SetFieldMiddleware = true;
             })
             .AddGraphTypes()
             .AddDataLoader()
@@ -87,8 +84,6 @@ namespace Vouzamo.ERM.Api.Extensions
             services.AddSingleton<IntegerFieldGraphType>();
             services.AddSingleton<NestedFieldGraphType>();
 
-            services.AddSingleton<FieldInputType>();
-
             services.AddSingleton<TypeScopeEnumerationGraphType>();
             services.AddSingleton<DirectionEnumerationGraphType>();
             services.AddSingleton<SeverityEnumerationGraphType>();
@@ -111,7 +106,6 @@ namespace Vouzamo.ERM.Api.Extensions
             // Enable endpoint for websockets (subscriptions)
             app.UseGraphQLWebSockets<MySchema>("/graphql");
 
-            app.UseGraphiQLServer(new GraphiQLOptions());
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
         }
 

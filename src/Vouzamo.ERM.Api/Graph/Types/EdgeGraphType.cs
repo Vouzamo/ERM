@@ -1,8 +1,6 @@
 ﻿using GraphQL.DataLoader;
 using GraphQL.Types;
 using MediatR;
-using System;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.CQRS;
 

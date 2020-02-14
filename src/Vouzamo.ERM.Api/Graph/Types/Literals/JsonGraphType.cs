@@ -73,8 +73,7 @@ namespace Vouzamo.ERM.Api.Graph.Types
             }
             else
             {
-                var tv = value as JsonGraphTypeConverter;
-                return tv?.GetValue();
+                return value.As<object>();
             }
         }
     }

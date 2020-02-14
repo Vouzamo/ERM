@@ -5,10 +5,8 @@ using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Groups;
-using Vouzamo.ERM.Api.Graph.Types.Input;
 using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Converters;
 using Vouzamo.ERM.Common.Extensions;
@@ -16,7 +14,6 @@ using Vouzamo.ERM.Common.Models.Notifications;
 using Vouzamo.ERM.Common.Models.Validation;
 using Vouzamo.ERM.CQRS;
 using Vouzamo.ERM.CQRS.Command;
-using Vouzamo.ERM.DTOs;
 using Vouzamo.ERM.CQRS.Extensions;
 
 namespace Vouzamo.ERM.Api.Graph

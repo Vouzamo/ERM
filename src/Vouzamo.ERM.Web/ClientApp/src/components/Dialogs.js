@@ -127,7 +127,7 @@ export function AddFieldDialog({ open, onConfirm, onClose }) {
                 <Select margin="dense" id="type" labelId="type-select-label" fullWidth value={type} onChange={(e) => setType(e.target.value)}>
                     <MenuItem value={'string'}>String</MenuItem>
                     <MenuItem value={'integer'}>Integer</MenuItem>
-                    <MenuItem value={'boolean'}>Boolean</MenuItem>
+                    <MenuItem value={'nested'}>Nested</MenuItem>
                 </Select>
                 <FormControlLabel label="Mandatory" control={<Switch checked={mandatory} onChange={() => setMandatory(!mandatory)} value={true} />} />
                 <FormControlLabel label="Enumerable" control={<Switch checked={enumerable} onChange={() => setEnumerable(!enumerable)} value={true} />} />
