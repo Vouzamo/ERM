@@ -3,8 +3,8 @@ import { useSnackbar } from 'notistack';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 
-import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControlLabel, Switch } from '@material-ui/core';
-import { Add as AddIcon, Save as SaveIcon, ExpandMore as ExpandMoreIcon, Reorder as ReorderIcon, NewReleases as MandatoryIcon, List as EnumerableIcon, Language as LocalizableIcon } from '@material-ui/icons';
+import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, ExpansionPanelActions, Divider, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Switch } from '@material-ui/core';
+import { Add as AddIcon, Save as SaveIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon, Reorder as ReorderIcon, NewReleases as MandatoryIcon, List as EnumerableIcon, Language as LocalizableIcon } from '@material-ui/icons';
 
 import { AddFieldDialog } from './Dialogs';
 
@@ -12,7 +12,7 @@ const useStyles = makeStyles(theme => ({
     panel: {
         width: '100%',
     },
-    summary: {
+    dragHandle: {
         marginLeft: theme.spacing(-1.5),
     },
     heading: {
@@ -65,27 +65,36 @@ export function TypeEditor({ source, onSave }) {
 
 }
 
-const DragHandle = SortableHandle(() => <Tooltip title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
+const DragHandle = SortableHandle(({ classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
 
 const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate }) => {
 
     const classes = useStyles();
 
+    const isExpanded = expanded === field.key;
+
     return (
-        <ExpansionPanel className={classes.panel} key={field.key} expanded={expanded === field.key} onChange={handleExpand(field.key)}>
-            <ExpansionPanelSummary className={classes.summary} expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
-                <DragHandle />
-                <Typography className={classes.heading}>{field.name}</Typography>
-                <Typography className={classes.secondaryHeading}>
-                    {field.type}
-                </Typography>
-                <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
-                <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
-                <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
+        <ExpansionPanel className={classes.panel} key={field.key} expanded={isExpanded} onChange={handleExpand(field.key)}>
+            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
+                {!isExpanded && <DragHandle classes={classes} />}
+                <Typography className={classes.heading}>{field.key}</Typography>
+                {!isExpanded && <>
+                    <Typography className={classes.secondaryHeading}>
+                        {field.type}
+                    </Typography>
+                    <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
+                    <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
+                    <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
+                </>}
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
                 <FieldEditor field={field} onUpdate={onUpdate} />
             </ExpansionPanelDetails>
+            <Divider />
+            <ExpansionPanelActions>
+                <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />}>Change Key</Button>
+                <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />}>Remove</Button>
+            </ExpansionPanelActions>
         </ExpansionPanel>
     );
 });
@@ -135,8 +144,7 @@ export function FieldsEditor({ owner, fields, onSave }) {
             updated[index] = field;
 
             setState(updated);
-            handleSort(index, index); // only way to re-render summary
-
+            
         }
     }
 
@@ -220,11 +228,24 @@ export function FieldEditor({ field, onUpdate }) {
     return (
 
         <Grid>
-            <TextField name="key" label="Key" disabled value={state.key} onChange={(e) => handleUpdate(e)} />
-            <TextField name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
-            <FormControlLabel label="Mandatory" fullwidth control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
-            <FormControlLabel label="Enumerable" fullwidth control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
-            <FormControlLabel label="Localizable" fullwidth control={<Switch name="localizable"  checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
+            <TextField required variant="outlined" name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
+            <FormControl required variant="outlined">
+                <InputLabel id="type-select-label">Type</InputLabel>
+                <Select name="type" labelId="type-select-label" fullWidth value={state.type} onChange={(e) => handleUpdate(e)}>
+                    <MenuItem value={'string'}>String</MenuItem>
+                    <MenuItem value={'integer'}>Integer</MenuItem>
+                    <MenuItem value={'nested'}>Nested</MenuItem>
+                </Select>
+            </FormControl>
+            <FormControl>
+                <FormControlLabel label="Mandatory" fullwidth control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
+            </FormControl>
+            <FormControl>
+                <FormControlLabel label="Enumerable" fullwidth control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
+            </FormControl>
+            <FormControl>
+                <FormControlLabel label="Localizable" fullwidth control={<Switch name="localizable" checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
+            </FormControl>
         </Grid>
         
     );
