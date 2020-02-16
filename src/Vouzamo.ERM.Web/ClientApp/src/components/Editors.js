@@ -1,8 +1,10 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useSnackbar } from 'notistack';
+import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
+import arrayMove from 'array-move';
 
-import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Card, CardHeader, CardContent, Typography, Button } from '@material-ui/core';
-import { Add as AddIcon, Save as SaveIcon, ExpandMore as ExpandMoreIcon } from '@material-ui/icons';
+import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControlLabel, Switch } from '@material-ui/core';
+import { Add as AddIcon, Save as SaveIcon, ExpandMore as ExpandMoreIcon, Reorder as ReorderIcon, NewReleases as MandatoryIcon, List as EnumerableIcon, Language as LocalizableIcon } from '@material-ui/icons';
 
 import { AddFieldDialog } from './Dialogs';
 
@@ -10,14 +12,24 @@ const useStyles = makeStyles(theme => ({
     panel: {
         width: '100%',
     },
+    summary: {
+        marginLeft: theme.spacing(-1.5),
+    },
     heading: {
+        alignSelf: 'center',
         fontSize: theme.typography.pxToRem(15),
         flexBasis: '33.33%',
         flexShrink: 0,
     },
     secondaryHeading: {
+        alignSelf: 'center',
         fontSize: theme.typography.pxToRem(15),
+        flexBasis: '33.33%',
+        flexShrink: 0,
         color: theme.palette.text.secondary,
+        '& span': {
+            color: 'red'
+        }
     },
     actions: {
         display: 'flex',
@@ -42,36 +54,103 @@ export function TypeEditor({ source, onSave }) {
     console.log(state);
 
     return (
-        <Container>
+        <Grid>
             <h4>{source.name}</h4>
             <p>{source.id}</p>
             <p>{source.scope}</p>
 
             <FieldsEditor owner={source.id} fields={source.fields} onSave={handleSave} />
-        </Container>
+        </Grid>
     )
 
 }
+
+const DragHandle = SortableHandle(() => <Tooltip title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
+
+const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate }) => {
+
+    const classes = useStyles();
+
+    return (
+        <ExpansionPanel className={classes.panel} key={field.key} expanded={expanded === field.key} onChange={handleExpand(field.key)}>
+            <ExpansionPanelSummary className={classes.summary} expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
+                <DragHandle />
+                <Typography className={classes.heading}>{field.name}</Typography>
+                <Typography className={classes.secondaryHeading}>
+                    {field.type}
+                </Typography>
+                <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
+                <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
+                <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
+            </ExpansionPanelSummary>
+            <ExpansionPanelDetails>
+                <FieldEditor field={field} onUpdate={onUpdate} />
+            </ExpansionPanelDetails>
+        </ExpansionPanel>
+    );
+});
+
+const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate }) => {
+
+    return (
+        <Grid>
+            {fields.map((field, i) => (
+                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onUpdate={onUpdate} />
+            ))}
+        </Grid>
+    );
+});
 
 export function FieldsEditor({ owner, fields, onSave }) {
 
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
 
-    const [expanded, setExpanded] = React.useState(false);
     const [addOpen, setAddOpen] = useState(false);
     const [state, setState] = useState(fields);
+    const [expanded, setExpanded] = useState(false);
 
-    const handleChange = panel => (event, isExpanded) => {
+    const handleExpand = panel => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
 
-    const addField = (field) => {
+    const handleSort = ({ oldIndex, newIndex }) => {
+
+        let sorted = arrayMove(state, oldIndex, newIndex);
+
+        console.log(sorted);
+
+        setState(sorted);
+
+    };
+
+    const handleUpdate = (field) => {
+
+        let index = state.findIndex(f => f.key === field.key);
+
+        if (index !== -1) {
+
+            let updated = state;
+
+            updated[index] = field;
+
+            setState(updated);
+            handleSort(index, index); // only way to re-render summary
+
+        }
+    }
+
+    const handleAdd = (field) => {
         let fields = state;
 
         if (fields.find(f => f.key == field.key)) {
             enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
         } else {
+
+            field.mandatory = false;
+            field.enumerable = false;
+            field.localizable = false;
+
             fields.push(field);
 
             setExpanded(field.key);
@@ -92,21 +171,9 @@ export function FieldsEditor({ owner, fields, onSave }) {
                 </Card>
             }
 
-            {state.map((field) => {
-                return (
-                    <ExpansionPanel className={classes.panel} key={field.key} expanded={expanded === field.key} onChange={handleChange(field.key)}>
-                        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
-                            <Typography className={classes.heading}>{field.name}</Typography>
-                            <Typography className={classes.secondaryHeading}>{field.type}{field.enumerable ? '[]' : ''}{field.mandatory ? '*' : ''}</Typography>
-                        </ExpansionPanelSummary>
-                        <ExpansionPanelDetails>
-                            <FieldEditor owner={owner} field={field} />
-                        </ExpansionPanelDetails>
-                    </ExpansionPanel>
-                );
-            })}
+            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} handleExpand={handleExpand} />
 
-            <AddFieldDialog open={addOpen} onConfirm={(field) => { addField(field); }} onClose={() => setAddOpen(false)} />
+            <AddFieldDialog open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
             <Grid className={classes.actions}>
                 <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>Add Field</Button>
@@ -119,15 +186,46 @@ export function FieldsEditor({ owner, fields, onSave }) {
 
 }
 
-export function FieldEditor({ owner, field }) {
+export function FieldEditor({ field, onUpdate }) {
 
     const [state, setState] = useState(field);
 
-    console.log(state);
+    const handleUpdate = (e) => {
+
+        let newState = { ...state, [e.target.name]: e.target.value }
+
+        setState(newState);
+
+        onUpdate(newState);
+
+    }
+
+    const handleSwitch = (e) => {
+
+        let currentState = state[e.target.name] || false;
+
+        let newState = { ...state, [e.target.name]: !currentState }
+
+        console.log(e);
+        console.log(e.target.name);
+        console.log(currentState);
+        console.log(newState);
+
+        setState(newState);
+
+        onUpdate(newState);
+
+    }
 
     return (
 
-        <Typography>Form goes here</Typography>
+        <Grid>
+            <TextField name="key" label="Key" disabled value={state.key} onChange={(e) => handleUpdate(e)} />
+            <TextField name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
+            <FormControlLabel label="Mandatory" fullwidth control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
+            <FormControlLabel label="Enumerable" fullwidth control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
+            <FormControlLabel label="Localizable" fullwidth control={<Switch name="localizable"  checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
+        </Grid>
         
     );
 
