@@ -34,6 +34,9 @@ const useStyles = makeStyles(theme => ({
     actions: {
         display: 'flex',
         justifyContent: 'space-between'
+    },
+    nameField: {
+        marginBottom: theme.spacing(3)
     }
 }));
 
@@ -67,7 +70,7 @@ export function TypeEditor({ source, onSave }) {
 
 const DragHandle = SortableHandle(({ classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
 
-const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate }) => {
+const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate, onRemove }) => {
 
     const classes = useStyles();
 
@@ -93,18 +96,18 @@ const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate
             <Divider />
             <ExpansionPanelActions>
                 <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />}>Change Key</Button>
-                <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />}>Remove</Button>
+                <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => onRemove(field.key)}>Remove</Button>
             </ExpansionPanelActions>
         </ExpansionPanel>
     );
 });
 
-const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate }) => {
+const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate, onRemove }) => {
 
     return (
         <Grid>
             {fields.map((field, i) => (
-                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onUpdate={onUpdate} />
+                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onUpdate={onUpdate} onRemove={onRemove} />
             ))}
         </Grid>
     );
@@ -132,6 +135,25 @@ export function FieldsEditor({ owner, fields, onSave }) {
         setState(sorted);
 
     };
+
+    const handleRemove = (fieldKey) => {
+
+        console.log('remove: ' + fieldKey);
+
+        let index = state.findIndex(f => f.key == fieldKey);
+
+        if (index !== -1) {
+
+            let updated = state;
+
+            updated.splice(index, 1);
+
+            setExpanded(false);
+            setState(updated);
+
+        }
+
+    }
 
     const handleUpdate = (field) => {
 
@@ -179,7 +201,7 @@ export function FieldsEditor({ owner, fields, onSave }) {
                 </Card>
             }
 
-            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} handleExpand={handleExpand} />
+            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onRemove={handleRemove} handleExpand={handleExpand} />
 
             <AddFieldDialog open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
@@ -196,6 +218,7 @@ export function FieldsEditor({ owner, fields, onSave }) {
 
 export function FieldEditor({ field, onUpdate }) {
 
+    const classes = useStyles();
     const [state, setState] = useState(field);
 
     const handleUpdate = (e) => {
@@ -227,25 +250,49 @@ export function FieldEditor({ field, onUpdate }) {
 
     return (
 
-        <Grid>
-            <TextField required variant="outlined" name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
-            <FormControl required variant="outlined">
-                <InputLabel id="type-select-label">Type</InputLabel>
-                <Select name="type" labelId="type-select-label" fullWidth value={state.type} onChange={(e) => handleUpdate(e)}>
-                    <MenuItem value={'string'}>String</MenuItem>
-                    <MenuItem value={'integer'}>Integer</MenuItem>
-                    <MenuItem value={'nested'}>Nested</MenuItem>
-                </Select>
-            </FormControl>
-            <FormControl>
-                <FormControlLabel label="Mandatory" fullwidth control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
-            </FormControl>
-            <FormControl>
-                <FormControlLabel label="Enumerable" fullwidth control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
-            </FormControl>
-            <FormControl>
-                <FormControlLabel label="Localizable" fullwidth control={<Switch name="localizable" checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
-            </FormControl>
+        <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+                <Grid container>
+                    <Grid item xs={12} className={classes.nameField}>
+                        <TextField required name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <FormControl required>
+                            <InputLabel id="type-select-label">Type</InputLabel>
+                            <Select name="type" labelId="type-select-label" value={state.type} onChange={(e) => handleUpdate(e)}>
+                                <MenuItem value={'string'}>String</MenuItem>
+                                <MenuItem value={'integer'}>Integer</MenuItem>
+                                <MenuItem value={'nested'}>Nested</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+                <Grid container>
+                    <Grid item xs={12}>
+                        <FormControl>
+                            <FormControlLabel label="Mandatory" control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <FormControl>
+                            <FormControlLabel label="Enumerable" control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
+                        </FormControl>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <FormControl>
+                            <FormControlLabel label="Localizable" control={<Switch name="localizable" checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
+                        </FormControl>
+                    </Grid>
+                </Grid>
+            </Grid>
+            {state.type === 'nested' &&
+                <Grid item xs={12}>
+                    <TextField required name="typeId" label="TypeId" value={state.typeId} onChange={(e) => handleUpdate(e)} />
+                </Grid>
+            }
+                
         </Grid>
         
     );

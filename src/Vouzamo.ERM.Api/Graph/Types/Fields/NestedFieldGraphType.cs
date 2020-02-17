@@ -7,7 +7,7 @@ namespace Vouzamo.ERM.Api.Graph.Types.Fields
     {
         public NestedFieldGraphType()
         {
-            Name = "nested";
+            Name = "NestedField";
 
             Field(field => field.TypeId, type: typeof(IdGraphType));
         }

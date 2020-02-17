@@ -6,7 +6,7 @@ namespace Vouzamo.ERM.Api.Graph.Types.Fields
     {
         public IntegerFieldGraphType()
         {
-            Name = "int";
+            Name = "IntegerField";
 
             Field(field => field.MinValue);
             Field(field => field.MaxValue);

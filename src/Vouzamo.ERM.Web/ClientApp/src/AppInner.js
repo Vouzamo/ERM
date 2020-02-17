@@ -3,7 +3,7 @@ import { Route } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import { ApolloProvider } from 'react-apollo';
 import ApolloClient from "apollo-client";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { InMemoryCache, IntrospectionFragmentMatcher } from 'apollo-cache-inmemory';
 import { split } from 'apollo-link';
 import { HttpLink } from 'apollo-link-http';
 import { WebSocketLink } from 'apollo-link-ws';
@@ -69,9 +69,27 @@ export default function AppInner() {
         httpLink,
     );
 
+    const fragmentMatcher = new IntrospectionFragmentMatcher({
+        introspectionQueryResultData: {
+            __schema: {
+                types: [
+                    {
+                        kind: "UNION",
+                        name: "Field",
+                        possibleTypes: [
+                            { name: "IntegerField" },
+                            { name: "StringField" },
+                            { name: "NestedField" }
+                        ],
+                    },
+                ],
+            },
+        }
+    });
+
     const client = new ApolloClient({
         link: link,
-        cache: new InMemoryCache()
+        cache: new InMemoryCache({ fragmentMatcher })
     });
 
     return (

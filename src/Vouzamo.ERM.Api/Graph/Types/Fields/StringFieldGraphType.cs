@@ -6,7 +6,7 @@ namespace Vouzamo.ERM.Api.Graph.Types.Fields
     {
         public StringFieldGraphType()
         {
-            Name = "string";
+            Name = "StringField";
 
             Field(field => field.MinLength);
             Field(field => field.MaxLength);

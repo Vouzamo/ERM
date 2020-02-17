@@ -32,6 +32,17 @@ export function Detail() {
                     mandatory
                     enumerable
                     localizable
+                    ... on StringField {
+                        minLength
+                        maxLength
+                    }
+                    ... on IntegerField {
+                        minValue
+                        maxValue
+                    }
+                    ... on NestedField {
+                        typeId
+                    }
                 }
             }
         }
