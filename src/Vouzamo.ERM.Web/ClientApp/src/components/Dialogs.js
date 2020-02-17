@@ -88,11 +88,17 @@ export function AddTypeDialog({ open, onClose }) {
 
 }
 
-export function AddFieldDialog({ open, onConfirm, onClose }) {
+export function AddFieldDialog({ field, open, onConfirm, onClose }) {
 
-    const [key, setKey] = useState("");
-    const [name, setName] = useState("");
-    const [type, setType] = useState("string");
+    const [state, setState] = useState(field);
+
+    const handleInput = (e) => {
+
+        let newState = { ...state, [e.target.name]: e.target.value };
+
+        setState(newState);
+
+    }
 
     return (
 
@@ -102,31 +108,17 @@ export function AddFieldDialog({ open, onConfirm, onClose }) {
                 <DialogContentText>Provide a unique key, display name, and type for your new field.</DialogContentText>
                 <TextField
                     autoFocus
-                    id="key"
+                    name="key"
                     label="Key"
                     type="text"
                     fullWidth
-                    value={key}
-                    onChange={(e) => setKey(e.target.value)}
+                    value={state.key}
+                    onChange={(e) => handleInput(e)}
                 />
-                <TextField
-                    id="name"
-                    label="Name"
-                    type="text"
-                    fullWidth
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <InputLabel id="type-select-label">Type</InputLabel>
-                <Select id="type" labelId="type-select-label" fullWidth value={type} onChange={(e) => setType(e.target.value)}>
-                    <MenuItem value={'string'}>String</MenuItem>
-                    <MenuItem value={'integer'}>Integer</MenuItem>
-                    <MenuItem value={'nested'}>Nested</MenuItem>
-                </Select>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="secondary">Cancel</Button>
-                <Button onClick={() => onConfirm({ key, name, type })} color="primary">Confirm</Button>
+                <Button onClick={() => onConfirm(state)} color="primary">Confirm</Button>
             </DialogActions>
         </Dialog>
 

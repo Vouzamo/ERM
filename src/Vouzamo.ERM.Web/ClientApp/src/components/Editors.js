@@ -70,44 +70,48 @@ export function TypeEditor({ source, onSave }) {
 
 const DragHandle = SortableHandle(({ classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
 
-const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate, onRemove }) => {
+const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate, onChangeKey, onRemove }) => {
 
     const classes = useStyles();
+    const [changeKeyOpen, setChangeKeyOpen] = useState(false);
 
     const isExpanded = expanded === field.key;
 
     return (
-        <ExpansionPanel className={classes.panel} key={field.key} expanded={isExpanded} onChange={handleExpand(field.key)}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
-                {!isExpanded && <DragHandle classes={classes} />}
-                <Typography className={classes.heading}>{field.key}</Typography>
-                {!isExpanded && <>
-                    <Typography className={classes.secondaryHeading}>
-                        {field.type}
-                    </Typography>
-                    <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
-                    <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
-                    <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
-                </>}
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-                <FieldEditor field={field} onUpdate={onUpdate} />
-            </ExpansionPanelDetails>
-            <Divider />
-            <ExpansionPanelActions>
-                <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />}>Change Key</Button>
-                <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => onRemove(field.key)}>Remove</Button>
-            </ExpansionPanelActions>
-        </ExpansionPanel>
+        <>
+            <AddFieldDialog field={field} open={changeKeyOpen} onConfirm={(f) => { onChangeKey(field.key, f.key); }} onClose={() => setChangeKeyOpen(false)} />
+            <ExpansionPanel className={classes.panel} key={field.key} expanded={isExpanded} onChange={handleExpand(field.key)}>
+                <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
+                    {!isExpanded && <DragHandle classes={classes} />}
+                    <Typography className={classes.heading}>{field.key}</Typography>
+                    {!isExpanded && <>
+                        <Typography className={classes.secondaryHeading}>
+                            {field.type}
+                        </Typography>
+                        <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
+                        <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
+                        <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
+                    </>}
+                </ExpansionPanelSummary>
+                <ExpansionPanelDetails>
+                    <FieldEditor field={field} onUpdate={onUpdate} />
+                </ExpansionPanelDetails>
+                <Divider />
+                <ExpansionPanelActions>
+                    <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => setChangeKeyOpen(true)}>Change Key</Button>
+                    <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => onRemove(field.key)}>Remove</Button>
+                </ExpansionPanelActions>
+            </ExpansionPanel>
+        </>
     );
 });
 
-const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate, onRemove }) => {
+const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate, onChangeKey, onRemove }) => {
 
     return (
         <Grid>
             {fields.map((field, i) => (
-                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onUpdate={onUpdate} onRemove={onRemove} />
+                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onChangeKey={onChangeKey} onUpdate={onUpdate} onRemove={onRemove} />
             ))}
         </Grid>
     );
@@ -122,6 +126,15 @@ export function FieldsEditor({ owner, fields, onSave }) {
     const [state, setState] = useState(fields);
     const [expanded, setExpanded] = useState(false);
 
+    const defaultField = {
+        key: "",
+        name: "",
+        type: "string",
+        mandatory: false,
+        enumerable: false,
+        localizable: false
+    };
+
     const handleExpand = panel => (event, isExpanded) => {
         setExpanded(isExpanded ? panel : false);
     };
@@ -135,6 +148,28 @@ export function FieldsEditor({ owner, fields, onSave }) {
         setState(sorted);
 
     };
+
+    const handleChangeKey = (oldKey, newKey) => {
+
+        let fields = state;
+
+        if (fields.find(f => f.key == newKey)) {
+            enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
+        } else {
+
+            let index = fields.findIndex(f => f.key == oldKey)
+            let field = fields[index];
+
+            field.key = newKey;
+            fields[index] = field;
+
+            setExpanded(newKey);
+            setState(fields);
+            //setChangeKeyOpen(false);
+
+        }
+
+    }
 
     const handleRemove = (fieldKey) => {
 
@@ -201,9 +236,9 @@ export function FieldsEditor({ owner, fields, onSave }) {
                 </Card>
             }
 
-            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onRemove={handleRemove} handleExpand={handleExpand} />
+            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onChangeKey={handleChangeKey} onRemove={handleRemove} handleExpand={handleExpand} />
 
-            <AddFieldDialog open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
+            <AddFieldDialog field={defaultField} open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
             <Grid className={classes.actions}>
                 <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>Add Field</Button>
@@ -287,12 +322,35 @@ export function FieldEditor({ field, onUpdate }) {
                     </Grid>
                 </Grid>
             </Grid>
-            {state.type === 'nested' &&
-                <Grid item xs={12}>
-                    <TextField required name="typeId" label="TypeId" value={state.typeId} onChange={(e) => handleUpdate(e)} />
+            <Grid item xs={12}>
+            {state.type === 'string' &&
+                <Grid container>
+                    <Grid item xs={12}>
+                        <TextField name="minLength" label="Min Length" value={state.minLength} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField name="maxLength" label="Max Length" value={state.maxLength} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
                 </Grid>
             }
-                
+            {state.type === 'integer' &&
+                <Grid container>
+                    <Grid item xs={12}>
+                        <TextField name="minValue" label="Min Value" value={state.minValue} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField name="maxValue" label="Max Value" value={state.maxValue} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
+                </Grid>
+            }
+            {state.type === 'nested' &&
+                <Grid container>
+                    <Grid item xs={12}>
+                        <TextField required name="typeId" label="TypeId" value={state.typeId} onChange={(e) => handleUpdate(e)} />
+                    </Grid>
+                </Grid>
+            }
+             </Grid>   
         </Grid>
         
     );
