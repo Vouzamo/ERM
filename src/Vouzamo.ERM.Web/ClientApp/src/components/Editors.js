@@ -62,13 +62,44 @@ export function TypeEditor() {
 
 const DragHandle = SortableHandle(({ disabled, classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton disabled={disabled}><ReorderIcon /></IconButton></Tooltip>);
 
-const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate, onChangeKey, onRemove }) => {
+const SortableField = SortableElement(({ field, expanded, handleExpand }) => {
 
+    const { enqueueSnackbar } = useSnackbar();
+    const { state, dispatch } = useContext(TypeContext);
     const classes = useStyles();
+
     const [changeKeyOpen, setChangeKeyOpen] = useState(false);
 
-    const handleChange = (f) => {
-        onChangeKey(field, f, () => setChangeKeyOpen(false));
+    const handleChange = (change) => {
+
+        if (field.key !== change.key && state.fields.find(f => f.key == change.key)) {
+            enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
+        } else {
+            let fields = state.fields;
+            let index = fields.findIndex(f => f.key == field.key)
+
+            fields[index] = change;
+
+            dispatch({ type: 'UPDATE_FIELDS', fields });
+            // setExpanded(change.key); Perhaps this should use an expansion panel context?
+            setChangeKeyOpen(false);
+        }
+    }
+
+    const handleRemove = (key) => {
+
+        let fields = state.fields;
+
+        let index = fields.findIndex(f => f.key == key);
+
+        if (index !== -1) {
+
+            fields.splice(index, 1);
+
+            // setExpanded(false); Perhaps this should use an expansion panel context?
+            dispatch({ type: 'UPDATE_FIELDS', fields });
+
+        }
     }
 
     const isExpanded = expanded === field.key;
@@ -87,24 +118,24 @@ const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate
                 </ExpansionPanelSummary>
                 <Divider />
                 <ExpansionPanelDetails>
-                    <FieldEditor field={field} onUpdate={onUpdate} />
+                    <FieldEditor field={field} />
                 </ExpansionPanelDetails>
                 <Divider />
                 <ExpansionPanelActions>
                     <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => setChangeKeyOpen(true)}>Change Key/Type</Button>
-                    <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => onRemove(field.key)}>Remove</Button>
+                    <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => handleRemove(field.key)}>Remove</Button>
                 </ExpansionPanelActions>
             </ExpansionPanel>
         </>
     );
 });
 
-const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, onUpdate, onChangeKey, onRemove }) => {
+const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand }) => {
 
     return (
         <Grid>
             {fields.map((field, i) => (
-                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} onChangeKey={onChangeKey} onUpdate={onUpdate} onRemove={onRemove} />
+                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} />
             ))}
         </Grid>
     );
@@ -146,61 +177,6 @@ export function FieldsEditor() {
 
     };
 
-    const handleChangeKey = (oldField, newField, success) => {
-
-        let fields = state.fields;
-
-        if (oldField.key !== newField.key && fields.find(f => f.key == newField.key)) {
-            enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
-        } else {
-
-            let index = fields.findIndex(f => f.key == oldField.key)
-            let field = fields[index];
-
-            field = newField;
-            fields[index] = field;
-
-            setExpanded(newField.key);
-            dispatch({ type: 'UPDATE_FIELDS', fields });
-
-            success();
-
-        }
-
-    }
-
-    const handleRemove = (fieldKey) => {
-
-        let index = state.fields.findIndex(f => f.key == fieldKey);
-
-        if (index !== -1) {
-
-            let fields = state.fields;
-
-            fields.splice(index, 1);
-
-            setExpanded(false);
-            dispatch({ type: 'UPDATE_FIELDS', fields });
-
-        }
-
-    }
-
-    const handleUpdate = (field) => {
-
-        let index = state.fields.findIndex(f => f.key === field.key);
-
-        if (index !== -1) {
-
-            let fields = state.fields;
-
-            fields[index] = field;
-
-            dispatch({ type: 'UPDATE_FIELDS', fields });
-            
-        }
-    }
-
     const handleAdd = (field) => {
         let fields = state.fields;
 
@@ -230,7 +206,7 @@ export function FieldsEditor() {
                 </Card>
             }
 
-            <SortableFieldset lockAxis="y" useDragHandle fields={state.fields} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onChangeKey={handleChangeKey} onRemove={handleRemove} handleExpand={handleExpand} />
+            <SortableFieldset lockAxis="y" useDragHandle fields={state.fields} onSortEnd={handleSort} expanded={expanded} handleExpand={handleExpand} />
 
             <AddFieldDialog field={defaultField} open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
@@ -245,18 +221,16 @@ export function FieldsEditor() {
 
 }
 
-export function FieldEditor({ field, onUpdate }) {
+export function FieldEditor({ field }) {
 
+    const { dispatch } = useContext(TypeContext);
     const classes = useStyles();
-    //const [state, setState] = useState(field);
 
     const handleUpdate = (e) => {
 
         let newState = { ...field, [e.target.name]: e.target.value }
 
-        //setState(newState);
-
-        onUpdate(newState);
+        dispatch({ type: 'UPDATE_FIELD', field: newState });
 
     }
 
@@ -267,9 +241,7 @@ export function FieldEditor({ field, onUpdate }) {
 
         let newState = { ...field, [`min${target}`]: min, [`max${target}`]: max }
 
-        //setState(newState);
-
-        onUpdate(newState);
+        dispatch({ type: 'UPDATE_FIELD', field: newState });
 
     };
 
@@ -279,9 +251,7 @@ export function FieldEditor({ field, onUpdate }) {
 
         let newState = { ...field, [e.target.name]: !currentState }
 
-        //setState(newState);
-
-        onUpdate(newState);
+        dispatch({ type: 'UPDATE_FIELD', field: newState });
 
     }
 

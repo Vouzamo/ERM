@@ -21,6 +21,24 @@ const reducer = (state, action) => {
     switch (action.type) {
         case 'SET_TYPE':
             return action.source;
+        case 'UPDATE_FIELD':
+
+            let index = state.fields.findIndex(f => f.key === action.field.key);
+
+            if (index !== -1) {
+
+                let fields = state.fields;
+
+                fields[index] = action.field;
+
+                return {
+                    ...state, fields: fields
+                };
+
+            }
+
+            return state;
+
         case 'UPDATE_FIELDS':
             return {
                 ...state, fields: action.fields
@@ -71,9 +89,6 @@ const Detail = () => {
         {
             variables: { id },
             onCompleted: (data) => {
-                console.log('dispatching');
-                console.log(data);
-
                 dispatch({ type: 'SET_TYPE', source: data.source });
             }
         }
