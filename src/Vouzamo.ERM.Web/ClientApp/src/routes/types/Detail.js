@@ -14,25 +14,27 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const initialState = {
-    
+    data: {},
+    activeFieldKey: false
 };
 
 const reducer = (state, action) => {
     switch (action.type) {
         case 'SET_TYPE':
-            return action.source;
+            return {
+                ...state, data: action.source
+            };
         case 'UPDATE_FIELD':
 
-            let index = state.fields.findIndex(f => f.key === action.field.key);
+            let update_field = state.data;
+            let index = update_field.fields.findIndex(f => f.key === action.field.key);
 
             if (index !== -1) {
 
-                let fields = state.fields;
-
-                fields[index] = action.field;
+                update_field.fields[index] = action.field;
 
                 return {
-                    ...state, fields: fields
+                    ...state, update_field
                 };
 
             }
@@ -40,9 +42,21 @@ const reducer = (state, action) => {
             return state;
 
         case 'UPDATE_FIELDS':
+
+            let update_fields = state.data;
+
+            update_fields.fields = action.fields;
+
             return {
-                ...state, fields: action.fields
+                ...state, data: update_fields
             };
+
+        case 'SET_ACTIVE_FIELD':
+
+            return {
+                ...state, activeFieldKey: action.key
+            };
+
         default:
             return state;
     };

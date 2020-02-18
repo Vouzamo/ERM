@@ -50,11 +50,11 @@ export function TypeEditor() {
 
     return (
         <Grid>
-            <h4>{state.name}</h4>
-            <p>{state.id}</p>
-            <p>{state.scope}</p>
+            <h4>{state.data.name}</h4>
+            <p>{state.data.id}</p>
+            <p>{state.data.scope}</p>
 
-            {state.fields && <FieldsEditor />}
+            {state.data.fields && <FieldsEditor />}
         </Grid>
     )
 
@@ -62,7 +62,7 @@ export function TypeEditor() {
 
 const DragHandle = SortableHandle(({ disabled, classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton disabled={disabled}><ReorderIcon /></IconButton></Tooltip>);
 
-const SortableField = SortableElement(({ field, expanded, handleExpand }) => {
+const SortableField = SortableElement(({ field }) => {
 
     const { enqueueSnackbar } = useSnackbar();
     const { state, dispatch } = useContext(TypeContext);
@@ -72,23 +72,24 @@ const SortableField = SortableElement(({ field, expanded, handleExpand }) => {
 
     const handleChange = (change) => {
 
-        if (field.key !== change.key && state.fields.find(f => f.key == change.key)) {
+        if (field.key !== change.key && state.data.fields.find(f => f.key == change.key)) {
             enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
         } else {
-            let fields = state.fields;
+            let fields = state.data.fields;
             let index = fields.findIndex(f => f.key == field.key)
 
             fields[index] = change;
 
             dispatch({ type: 'UPDATE_FIELDS', fields });
-            // setExpanded(change.key); Perhaps this should use an expansion panel context?
+            dispatch({ type: 'SET_ACTIVE_FIELD', key: change.key });
+
             setChangeKeyOpen(false);
         }
     }
 
     const handleRemove = (key) => {
 
-        let fields = state.fields;
+        let fields = state.data.fields;
 
         let index = fields.findIndex(f => f.key == key);
 
@@ -96,13 +97,17 @@ const SortableField = SortableElement(({ field, expanded, handleExpand }) => {
 
             fields.splice(index, 1);
 
-            // setExpanded(false); Perhaps this should use an expansion panel context?
+            dispatch({ type: 'SET_ACTIVE_FIELD', key: false });
             dispatch({ type: 'UPDATE_FIELDS', fields });
 
         }
     }
 
-    const isExpanded = expanded === field.key;
+    const handleExpand = panel => (event, isExpanded) => {
+        dispatch({ type: 'SET_ACTIVE_FIELD', key: isExpanded ? panel : false })
+    };
+
+    const isExpanded = state.activeFieldKey === field.key;
 
     return (
         <>
@@ -130,12 +135,12 @@ const SortableField = SortableElement(({ field, expanded, handleExpand }) => {
     );
 });
 
-const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand }) => {
+const SortableFieldset = SortableContainer(({ fields }) => {
 
     return (
         <Grid>
             {fields.map((field, i) => (
-                <SortableField key={field.key} index={i} field={field} expanded={expanded} handleExpand={handleExpand} />
+                <SortableField key={field.key} index={i} field={field} />
             ))}
         </Grid>
     );
@@ -148,7 +153,6 @@ export function FieldsEditor() {
     const { enqueueSnackbar } = useSnackbar();
 
     const [addOpen, setAddOpen] = useState(false);
-    const [expanded, setExpanded] = useState(false);
 
     const defaultField = {
         key: "",
@@ -163,22 +167,16 @@ export function FieldsEditor() {
         maxLength: 512
     };
 
-    const handleExpand = panel => (event, isExpanded) => {
-
-        setExpanded(isExpanded ? panel : false);
-
-    };
-
     const handleSort = ({ oldIndex, newIndex }) => {
 
-        let fields = arrayMove(state.fields, oldIndex, newIndex);
+        let fields = arrayMove(state.data.fields, oldIndex, newIndex);
 
         dispatch({ type: 'UPDATE_FIELDS', fields });
 
     };
 
     const handleAdd = (field) => {
-        let fields = state.fields;
+        let fields = state.data.fields;
 
         if (fields.find(f => f.key == field.key)) {
             enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
@@ -190,7 +188,7 @@ export function FieldsEditor() {
 
             fields.push(field);
 
-            setExpanded(field.key);
+            dispatch({ type: 'SET_ACTIVE_FIELD', key: field.key });
             dispatch({ type: 'UPDATE_FIELDS', fields });
             setAddOpen(false);
         }
@@ -200,13 +198,13 @@ export function FieldsEditor() {
 
         <Container>
 
-            {state.fields.length === 0 &&
+            {state.data.fields.length === 0 &&
                 <Card>
                     <CardHeader title="Empty" subheader="Add a field to get started..." />
                 </Card>
             }
 
-            <SortableFieldset lockAxis="y" useDragHandle fields={state.fields} onSortEnd={handleSort} expanded={expanded} handleExpand={handleExpand} />
+            <SortableFieldset lockAxis="y" useDragHandle fields={state.data.fields} onSortEnd={handleSort} />
 
             <AddFieldDialog field={defaultField} open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
