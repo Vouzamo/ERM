@@ -1,11 +1,12 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useContext } from 'react';
 import { useSnackbar } from 'notistack';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 
-import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, ExpansionPanelActions, Divider, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Switch } from '@material-ui/core';
+import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, ExpansionPanelActions, Divider, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Slider, Switch } from '@material-ui/core';
 import { Add as AddIcon, Save as SaveIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon, Reorder as ReorderIcon, NewReleases as MandatoryIcon, List as EnumerableIcon, Language as LocalizableIcon } from '@material-ui/icons';
 
+import { TypeContext } from '../routes/types/Detail';
 import { AddFieldDialog } from './Dialogs';
 
 const useStyles = makeStyles(theme => ({
@@ -35,70 +36,62 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         justifyContent: 'space-between'
     },
+    fieldEditor: {
+        paddingTop: theme.spacing(3)
+    },
     nameField: {
         marginBottom: theme.spacing(3)
     }
 }));
 
-export function TypeEditor({ source, onSave }) {
+export function TypeEditor() {
 
-    const [state, setState] = useState(source);
-
-    const handleSave = (fields) => {
-
-        let type = state;
-
-        type.fields = fields;
-
-        onSave(type);
-
-    }
-
-    console.log(state);
+    const { state } = useContext(TypeContext);
 
     return (
         <Grid>
-            <h4>{source.name}</h4>
-            <p>{source.id}</p>
-            <p>{source.scope}</p>
+            <h4>{state.name}</h4>
+            <p>{state.id}</p>
+            <p>{state.scope}</p>
 
-            <FieldsEditor owner={source.id} fields={source.fields} onSave={handleSave} />
+            {state.fields && <FieldsEditor />}
         </Grid>
     )
 
 }
 
-const DragHandle = SortableHandle(({ classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton><ReorderIcon /></IconButton></Tooltip>);
+const DragHandle = SortableHandle(({ disabled, classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton disabled={disabled}><ReorderIcon /></IconButton></Tooltip>);
 
 const SortableField = SortableElement(({ field, expanded, handleExpand, onUpdate, onChangeKey, onRemove }) => {
 
     const classes = useStyles();
     const [changeKeyOpen, setChangeKeyOpen] = useState(false);
 
+    const handleChange = (f) => {
+        onChangeKey(field, f, () => setChangeKeyOpen(false));
+    }
+
     const isExpanded = expanded === field.key;
 
     return (
         <>
-            <AddFieldDialog field={field} open={changeKeyOpen} onConfirm={(f) => { onChangeKey(field.key, f.key); }} onClose={() => setChangeKeyOpen(false)} />
+            <AddFieldDialog field={field} open={changeKeyOpen} onConfirm={(f) => { handleChange(f); }} onClose={() => setChangeKeyOpen(false)} />
             <ExpansionPanel className={classes.panel} key={field.key} expanded={isExpanded} onChange={handleExpand(field.key)}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
-                    {!isExpanded && <DragHandle classes={classes} />}
+                    <DragHandle disabled={isExpanded} classes={classes} />
                     <Typography className={classes.heading}>{field.key}</Typography>
-                    {!isExpanded && <>
-                        <Typography className={classes.secondaryHeading}>
-                            {field.type}
-                        </Typography>
-                        <Tooltip title="Mandatory"><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></Tooltip>
-                        <Tooltip title="Enumerable"><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></Tooltip>
-                        <Tooltip title="Localizable"><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></Tooltip>
-                    </>}
+                    <Typography className={classes.secondaryHeading}>{field.type}</Typography>
+                    <Tooltip title="Mandatory"><span><IconButton disabled={!field.mandatory} color="secondary"><MandatoryIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Enumerable"><span><IconButton disabled={!field.enumerable} color="secondary"><EnumerableIcon /></IconButton></span></Tooltip>
+                    <Tooltip title="Localizable"><span><IconButton disabled={!field.localizable} color="secondary"><LocalizableIcon /></IconButton></span></Tooltip>
                 </ExpansionPanelSummary>
+                <Divider />
                 <ExpansionPanelDetails>
                     <FieldEditor field={field} onUpdate={onUpdate} />
                 </ExpansionPanelDetails>
                 <Divider />
                 <ExpansionPanelActions>
-                    <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => setChangeKeyOpen(true)}>Change Key</Button>
+                    <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => setChangeKeyOpen(true)}>Change Key/Type</Button>
                     <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => onRemove(field.key)}>Remove</Button>
                 </ExpansionPanelActions>
             </ExpansionPanel>
@@ -117,13 +110,13 @@ const SortableFieldset = SortableContainer(({ fields, expanded, handleExpand, on
     );
 });
 
-export function FieldsEditor({ owner, fields, onSave }) {
+export function FieldsEditor() {
 
+    const { state, dispatch } = useContext(TypeContext);
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
 
     const [addOpen, setAddOpen] = useState(false);
-    const [state, setState] = useState(fields);
     const [expanded, setExpanded] = useState(false);
 
     const defaultField = {
@@ -132,40 +125,45 @@ export function FieldsEditor({ owner, fields, onSave }) {
         type: "string",
         mandatory: false,
         enumerable: false,
-        localizable: false
+        localizable: false,
+        minValue: 0,
+        maxValue: 512,
+        minLength: 0,
+        maxLength: 512
     };
 
     const handleExpand = panel => (event, isExpanded) => {
+
         setExpanded(isExpanded ? panel : false);
+
     };
 
     const handleSort = ({ oldIndex, newIndex }) => {
 
-        let sorted = arrayMove(state, oldIndex, newIndex);
+        let fields = arrayMove(state.fields, oldIndex, newIndex);
 
-        console.log(sorted);
-
-        setState(sorted);
+        dispatch({ type: 'UPDATE_FIELDS', fields });
 
     };
 
-    const handleChangeKey = (oldKey, newKey) => {
+    const handleChangeKey = (oldField, newField, success) => {
 
-        let fields = state;
+        let fields = state.fields;
 
-        if (fields.find(f => f.key == newKey)) {
+        if (oldField.key !== newField.key && fields.find(f => f.key == newField.key)) {
             enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
         } else {
 
-            let index = fields.findIndex(f => f.key == oldKey)
+            let index = fields.findIndex(f => f.key == oldField.key)
             let field = fields[index];
 
-            field.key = newKey;
+            field = newField;
             fields[index] = field;
 
-            setExpanded(newKey);
-            setState(fields);
-            //setChangeKeyOpen(false);
+            setExpanded(newField.key);
+            dispatch({ type: 'UPDATE_FIELDS', fields });
+
+            success();
 
         }
 
@@ -173,18 +171,16 @@ export function FieldsEditor({ owner, fields, onSave }) {
 
     const handleRemove = (fieldKey) => {
 
-        console.log('remove: ' + fieldKey);
-
-        let index = state.findIndex(f => f.key == fieldKey);
+        let index = state.fields.findIndex(f => f.key == fieldKey);
 
         if (index !== -1) {
 
-            let updated = state;
+            let fields = state.fields;
 
-            updated.splice(index, 1);
+            fields.splice(index, 1);
 
             setExpanded(false);
-            setState(updated);
+            dispatch({ type: 'UPDATE_FIELDS', fields });
 
         }
 
@@ -192,21 +188,21 @@ export function FieldsEditor({ owner, fields, onSave }) {
 
     const handleUpdate = (field) => {
 
-        let index = state.findIndex(f => f.key === field.key);
+        let index = state.fields.findIndex(f => f.key === field.key);
 
         if (index !== -1) {
 
-            let updated = state;
+            let fields = state.fields;
 
-            updated[index] = field;
+            fields[index] = field;
 
-            setState(updated);
+            dispatch({ type: 'UPDATE_FIELDS', fields });
             
         }
     }
 
     const handleAdd = (field) => {
-        let fields = state;
+        let fields = state.fields;
 
         if (fields.find(f => f.key == field.key)) {
             enqueueSnackbar('Each field key must be unique within type', { variant: 'error' });
@@ -219,30 +215,28 @@ export function FieldsEditor({ owner, fields, onSave }) {
             fields.push(field);
 
             setExpanded(field.key);
-            setState(fields);
+            dispatch({ type: 'UPDATE_FIELDS', fields });
             setAddOpen(false);
         }
     }
-
-    console.log(state);
 
     return (
 
         <Container>
 
-            {state.length === 0 &&
+            {state.fields.length === 0 &&
                 <Card>
                     <CardHeader title="Empty" subheader="Add a field to get started..." />
                 </Card>
             }
 
-            <SortableFieldset useDragHandle fields={state} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onChangeKey={handleChangeKey} onRemove={handleRemove} handleExpand={handleExpand} />
+            <SortableFieldset lockAxis="y" useDragHandle fields={state.fields} expanded={expanded} onSortEnd={handleSort} onUpdate={handleUpdate} onChangeKey={handleChangeKey} onRemove={handleRemove} handleExpand={handleExpand} />
 
             <AddFieldDialog field={defaultField} open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
 
             <Grid className={classes.actions}>
                 <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>Add Field</Button>
-                <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => onSave(state)}>Save Changes</Button>
+                <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => alert(state)}>Save Changes</Button>
             </Grid>
 
         </Container>
@@ -254,30 +248,38 @@ export function FieldsEditor({ owner, fields, onSave }) {
 export function FieldEditor({ field, onUpdate }) {
 
     const classes = useStyles();
-    const [state, setState] = useState(field);
+    //const [state, setState] = useState(field);
 
     const handleUpdate = (e) => {
 
-        let newState = { ...state, [e.target.name]: e.target.value }
+        let newState = { ...field, [e.target.name]: e.target.value }
 
-        setState(newState);
+        //setState(newState);
 
         onUpdate(newState);
 
     }
 
+    const handleSlide = (e, newValue, target) => {
+
+        let min = newValue[0];
+        let max = newValue[1];
+
+        let newState = { ...field, [`min${target}`]: min, [`max${target}`]: max }
+
+        //setState(newState);
+
+        onUpdate(newState);
+
+    };
+
     const handleSwitch = (e) => {
 
-        let currentState = state[e.target.name] || false;
+        let currentState = field[e.target.name] || false;
 
-        let newState = { ...state, [e.target.name]: !currentState }
+        let newState = { ...field, [e.target.name]: !currentState }
 
-        console.log(e);
-        console.log(e.target.name);
-        console.log(currentState);
-        console.log(newState);
-
-        setState(newState);
+        //setState(newState);
 
         onUpdate(newState);
 
@@ -285,21 +287,11 @@ export function FieldEditor({ field, onUpdate }) {
 
     return (
 
-        <Grid container spacing={3}>
+        <Grid className={classes.fieldEditor} container spacing={3}>
             <Grid item xs={12} sm={6}>
                 <Grid container>
                     <Grid item xs={12} className={classes.nameField}>
-                        <TextField required name="name" label="Name" value={state.name} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <FormControl required>
-                            <InputLabel id="type-select-label">Type</InputLabel>
-                            <Select name="type" labelId="type-select-label" value={state.type} onChange={(e) => handleUpdate(e)}>
-                                <MenuItem value={'string'}>String</MenuItem>
-                                <MenuItem value={'integer'}>Integer</MenuItem>
-                                <MenuItem value={'nested'}>Nested</MenuItem>
-                            </Select>
-                        </FormControl>
+                        <TextField required name="name" label="Name" value={field.name} onChange={(e) => handleUpdate(e)} />
                     </Grid>
                 </Grid>
             </Grid>
@@ -307,50 +299,49 @@ export function FieldEditor({ field, onUpdate }) {
                 <Grid container>
                     <Grid item xs={12}>
                         <FormControl>
-                            <FormControlLabel label="Mandatory" control={<Switch name="mandatory" checked={state.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
+                            <FormControlLabel label="Mandatory" control={<Switch name="mandatory" checked={field.mandatory} onChange={(e) => handleSwitch(e)} value={true} />} />
                         </FormControl>
                     </Grid>
                     <Grid item xs={12}>
                         <FormControl>
-                            <FormControlLabel label="Enumerable" control={<Switch name="enumerable" checked={state.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
+                            <FormControlLabel label="Enumerable" control={<Switch name="enumerable" checked={field.enumerable} onChange={(e) => handleSwitch(e)} value={true} />} />
                         </FormControl>
                     </Grid>
                     <Grid item xs={12}>
                         <FormControl>
-                            <FormControlLabel label="Localizable" control={<Switch name="localizable" checked={state.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
+                            <FormControlLabel label="Localizable" control={<Switch name="localizable" checked={field.localizable} onChange={(e) => handleSwitch(e)} value={true} />} />
                         </FormControl>
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item xs={12}>
-            {state.type === 'string' &&
-                <Grid container>
-                    <Grid item xs={12}>
-                        <TextField name="minLength" label="Min Length" value={state.minLength} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField name="maxLength" label="Max Length" value={state.maxLength} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
+            {(field.type === 'string' || field.type === 'nested') &&
+                <Grid item xs={12}>
+                    <Divider className={classes.nameField} />
+                    {field.type === 'string' &&
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <Typography id="slider-length" gutterBottom>Min/Max Length</Typography>
+                                <Slider
+                                    min={0}
+                                    max={512}
+                                    value={[field.minLength, field.maxLength]}
+                                    onChange={(e, newValue) => handleSlide(e, newValue, 'Length')}
+                                    valueLabelDisplay="auto"
+                                    aria-labelledby="slider-length"
+                                    getAriaValueText={(value) => value}
+                                />
+                            </Grid>
+                        </Grid>
+                    }
+                    {field.type === 'nested' &&
+                        <Grid container>
+                            <Grid item xs={12}>
+                                <TextField required name="typeId" label="TypeId" value={field.typeId} onChange={(e) => handleUpdate(e)} />
+                            </Grid>
+                        </Grid>
+                    }
                 </Grid>
             }
-            {state.type === 'integer' &&
-                <Grid container>
-                    <Grid item xs={12}>
-                        <TextField name="minValue" label="Min Value" value={state.minValue} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField name="maxValue" label="Max Value" value={state.maxValue} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
-                </Grid>
-            }
-            {state.type === 'nested' &&
-                <Grid container>
-                    <Grid item xs={12}>
-                        <TextField required name="typeId" label="TypeId" value={state.typeId} onChange={(e) => handleUpdate(e)} />
-                    </Grid>
-                </Grid>
-            }
-             </Grid>   
         </Grid>
         
     );

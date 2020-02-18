@@ -1,4 +1,4 @@
-﻿import React from 'react';
+﻿import React, { createContext, useReducer } from 'react';
 import { useParams } from 'react-router-dom';
 import gql from 'graphql-tag';
 import { useQuery } from '@apollo/react-hooks';
@@ -13,10 +13,29 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export function Detail() {
+const initialState = {
+    
+};
 
+const reducer = (state, action) => {
+    switch (action.type) {
+        case 'SET_TYPE':
+            return action.source;
+        case 'UPDATE_FIELDS':
+            return {
+                ...state, fields: action.fields
+            };
+        default:
+            return state;
+    };
+};
+
+const TypeContext = createContext(initialState);
+
+const Detail = () => {
+
+    const [state, dispatch] = useReducer(reducer, initialState);
     const classes = useStyles();
-
     const { id } = useParams();
 
     const QUERY = gql`
@@ -48,39 +67,37 @@ export function Detail() {
         }
     `;
 
-    const { loading, error, data, refetch } = useQuery(QUERY,
+    const { loading, error, refetch } = useQuery(QUERY,
         {
-            variables: { id }
+            variables: { id },
+            onCompleted: (data) => {
+                console.log('dispatching');
+                console.log(data);
+
+                dispatch({ type: 'SET_TYPE', source: data.source });
+            }
         }
     );
-
-    const handleSave = (newSource) => {
-        alert('Not yet implemented...');
-        console.log(newSource);
-
-        // mutation provides success feedback
-        // then refetch
-        // error notification
-    }
 
     if (error) {
 
         console.log(error);
 
-        return <Button onClick={refetch}>Retry</Button>;
+        return (
+            <Button onClick={refetch}>Retry</Button>
+        );
 
     }
 
     return (
-        <>
+        <TypeContext.Provider value={{ state, dispatch }}>
             <Backdrop className={classes.backdrop} open={loading}>
                 <CircularProgress color="inherit" />
             </Backdrop>
-
-            {data &&
-                <TypeEditor source={data.source} onSave={handleSave} />
-            }
-        </>
+            <TypeEditor />
+        </TypeContext.Provider>
     );
 
 }
+
+export { Detail, TypeContext }

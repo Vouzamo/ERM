@@ -1,6 +1,6 @@
 ﻿import React, { useState } from 'react';
 import { useHistory } from "react-router-dom";
-import { makeStyles, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControlLabel, Switch, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
+import { makeStyles, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
 
@@ -105,9 +105,10 @@ export function AddFieldDialog({ field, open, onConfirm, onClose }) {
         <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Add Field</DialogTitle>
             <DialogContent>
-                <DialogContentText>Provide a unique key, display name, and type for your new field.</DialogContentText>
+                <DialogContentText>Provide a unique key and type for field.</DialogContentText>
                 <TextField
                     autoFocus
+                    required
                     name="key"
                     label="Key"
                     type="text"
@@ -115,6 +116,14 @@ export function AddFieldDialog({ field, open, onConfirm, onClose }) {
                     value={state.key}
                     onChange={(e) => handleInput(e)}
                 />
+                <FormControl required>
+                    <InputLabel id="type-select-label">Type</InputLabel>
+                    <Select name="type" labelId="type-select-label" value={state.type} onChange={(e) => handleInput(e)}>
+                        <MenuItem value={'string'}>String</MenuItem>
+                        <MenuItem value={'integer'}>Integer</MenuItem>
+                        <MenuItem value={'nested'}>Nested</MenuItem>
+                    </Select>
+                </FormControl>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="secondary">Cancel</Button>
