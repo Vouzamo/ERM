@@ -68,8 +68,6 @@ const SortableField = SortableElement(({ field }) => {
     const { state, dispatch } = useContext(TypeContext);
     const classes = useStyles();
 
-    const [changeKeyOpen, setChangeKeyOpen] = useState(false);
-
     const handleChange = (change) => {
 
         if (field.key !== change.key && state.data.fields.find(f => f.key == change.key)) {
@@ -82,8 +80,6 @@ const SortableField = SortableElement(({ field }) => {
 
             dispatch({ type: 'UPDATE_FIELDS', fields });
             dispatch({ type: 'SET_ACTIVE_FIELD', key: change.key });
-
-            setChangeKeyOpen(false);
         }
     }
 
@@ -108,10 +104,11 @@ const SortableField = SortableElement(({ field }) => {
     };
 
     const isExpanded = state.activeFieldKey === field.key;
+    const isChanging = isExpanded && state.changeDialogOpen;
 
     return (
         <>
-            <AddFieldDialog field={field} open={changeKeyOpen} onConfirm={(f) => { handleChange(f); }} onClose={() => setChangeKeyOpen(false)} />
+            <AddFieldDialog field={field} open={isChanging} onConfirm={(f) => { handleChange(f); }} onClose={() => dispatch({ type: 'SET_CHANGE_DIALOG', open: false })} />
             <ExpansionPanel className={classes.panel} key={field.key} expanded={isExpanded} onChange={handleExpand(field.key)}>
                 <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls={`${field.key}-content`} id={`${field.key}-header`}>
                     <DragHandle disabled={isExpanded} classes={classes} />
@@ -127,7 +124,7 @@ const SortableField = SortableElement(({ field }) => {
                 </ExpansionPanelDetails>
                 <Divider />
                 <ExpansionPanelActions>
-                    <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => setChangeKeyOpen(true)}>Change Key/Type</Button>
+                    <Button variant="outlined" size="small" color="primary" startIcon={<EditIcon />} onClick={() => dispatch({ type: 'SET_CHANGE_DIALOG', open: true })}>Change Key/Type</Button>
                     <Button variant="outlined" size="small" color="secondary" startIcon={<DeleteIcon />} onClick={() => handleRemove(field.key)}>Remove</Button>
                 </ExpansionPanelActions>
             </ExpansionPanel>
@@ -188,7 +185,6 @@ export function FieldsEditor() {
 
             dispatch({ type: 'SET_ACTIVE_FIELD', key: field.key });
             dispatch({ type: 'UPDATE_FIELDS', fields });
-            dispatch({ type: 'CLOSE_ADD_DIALOG' })
         }
     }
 
@@ -204,10 +200,10 @@ export function FieldsEditor() {
 
             <SortableFieldset lockAxis="y" useDragHandle fields={state.data.fields} onSortEnd={handleSort} />
 
-            <AddFieldDialog field={defaultField} open={state.addDialogOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => dispatch({ type: 'CLOSE_ADD_DIALOG' })} />
+            <AddFieldDialog field={defaultField} open={state.addDialogOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => dispatch({ type: 'SET_ADD_DIALOG', open: false })} />
 
             <Grid className={classes.actions}>
-                <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => dispatch({ type: 'OPEN_ADD_DIALOG' })}>Add Field</Button>
+                <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => dispatch({ type: 'SET_ADD_DIALOG', open: true })}>Add Field</Button>
                 <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => alert(state)}>Save Changes</Button>
             </Grid>
 
