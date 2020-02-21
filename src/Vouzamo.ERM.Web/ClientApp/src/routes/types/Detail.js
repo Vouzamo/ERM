@@ -15,7 +15,8 @@ const useStyles = makeStyles(theme => ({
 
 const initialState = {
     data: {},
-    activeFieldKey: false
+    activeFieldKey: false,
+    addDialogOpen: false
 };
 
 const reducer = (state, action) => {
@@ -24,6 +25,14 @@ const reducer = (state, action) => {
             return {
                 ...state, data: action.source
             };
+        case 'OPEN_ADD_DIALOG':
+            return {
+                ...state, addDialogOpen: true
+            }
+        case 'CLOSE_ADD_DIALOG':
+            return {
+                ...state, addDialogOpen: false
+            }
         case 'UPDATE_FIELD':
 
             let update_field = state.data;

@@ -152,8 +152,6 @@ export function FieldsEditor() {
     const classes = useStyles();
     const { enqueueSnackbar } = useSnackbar();
 
-    const [addOpen, setAddOpen] = useState(false);
-
     const defaultField = {
         key: "",
         name: "",
@@ -190,7 +188,7 @@ export function FieldsEditor() {
 
             dispatch({ type: 'SET_ACTIVE_FIELD', key: field.key });
             dispatch({ type: 'UPDATE_FIELDS', fields });
-            setAddOpen(false);
+            dispatch({ type: 'CLOSE_ADD_DIALOG' })
         }
     }
 
@@ -206,10 +204,10 @@ export function FieldsEditor() {
 
             <SortableFieldset lockAxis="y" useDragHandle fields={state.data.fields} onSortEnd={handleSort} />
 
-            <AddFieldDialog field={defaultField} open={addOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => setAddOpen(false)} />
+            <AddFieldDialog field={defaultField} open={state.addDialogOpen} onConfirm={(field) => { handleAdd(field); }} onClose={() => dispatch({ type: 'CLOSE_ADD_DIALOG' })} />
 
             <Grid className={classes.actions}>
-                <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => setAddOpen(true)}>Add Field</Button>
+                <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => dispatch({ type: 'OPEN_ADD_DIALOG' })}>Add Field</Button>
                 <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => alert(state)}>Save Changes</Button>
             </Grid>
 
