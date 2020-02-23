@@ -3,6 +3,7 @@ using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Server.Internal;
 using GraphQL.Server.Ui.Playground;
+using GraphQL.SystemTextJson;
 using GraphQL.Types;
 using GraphQL.Validation;
 using MediatR;
@@ -38,7 +39,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
         public static void AddGraph(this IServiceCollection services)
         {
-            services.AddSingleton<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+            services.AddSingleton<IDocumentWriter, DocumentWriter>();
 
             services.AddHttpContextAccessor();
 
@@ -109,7 +111,7 @@ namespace Vouzamo.ERM.Api.Extensions
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
         }
 
-        public static void AddException(this ResolveFieldContext context, Exception exception)
+        public static void AddException(this IResolveFieldContext context, Exception exception)
         {
             switch(exception)
             {

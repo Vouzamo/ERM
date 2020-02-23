@@ -1,5 +1,7 @@
 ﻿using GraphQL;
 using GraphQL.Types;
+using GraphQL.Utilities;
+using System;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
 
@@ -7,11 +9,11 @@ namespace Vouzamo.ERM.Api.Graph
 {
     public class MySchema : Schema
     {
-        public MySchema(IDependencyResolver resolver) : base(resolver)
+        public MySchema(IServiceProvider serviceProvider) : base(serviceProvider)
         {
-            Query = resolver.Resolve<MyQuery>();
-            Mutation = resolver.Resolve<MyMutation>();
-            Subscription = resolver.Resolve<MySubscription>();
+            Query = serviceProvider.GetRequiredService<MyQuery>();
+            Mutation = serviceProvider.GetRequiredService<MyMutation>();
+            Subscription = serviceProvider.GetRequiredService<MySubscription>();
 
             RegisterType<StringFieldGraphType>();
             RegisterType<IntegerFieldGraphType>();
