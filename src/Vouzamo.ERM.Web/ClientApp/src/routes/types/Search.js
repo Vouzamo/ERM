@@ -24,7 +24,20 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export function Search() {
+export function SearchRoute() {
+
+    const classes = useStyles();
+
+    return (
+        <Search>
+            {(results) => results.map((result) => <TypeCard key={result.id} source={result} className={classes.card} />)}
+        </Search>
+    );
+
+}
+
+
+export function Search({ children }) {
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
@@ -111,13 +124,7 @@ export function Search() {
             {data &&
                 <>
                     <Pagination count={calculateTotalPages(size, data.search.totalCount)} page={page} onChange={handlePagination} />
-                    <Grid>
-                        {data.search.results.map((result) => {
-                            return (
-                                <TypeCard key={result.id} source={result} className={classes.card} />
-                            );
-                        })}
-                    </Grid>
+                    <Grid>{children(data.search.results)}</Grid>
                 </>
             }
 

@@ -8,6 +8,7 @@ import { Add as AddIcon, Save as SaveIcon, Edit as EditIcon, Delete as DeleteIco
 
 import { TypeContext } from '../routes/types/Detail';
 import { AddFieldDialog } from './Dialogs';
+import { TypeSelector } from './Inputs';
 
 const useStyles = makeStyles(theme => ({
     panel: {
@@ -60,7 +61,7 @@ export function TypeEditor() {
 
 }
 
-const DragHandle = SortableHandle(({ disabled, classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><IconButton disabled={disabled}><ReorderIcon /></IconButton></Tooltip>);
+const DragHandle = SortableHandle(({ disabled, classes }) => <Tooltip className={classes.dragHandle} title="Drag to reorder"><span><IconButton disabled={disabled}><ReorderIcon /></IconButton></span></Tooltip>);
 
 const SortableField = SortableElement(({ field }) => {
 
@@ -222,6 +223,8 @@ export function FieldEditor({ field }) {
 
         let newState = { ...field, [e.target.name]: e.target.value }
 
+        console.log(newState);
+
         dispatch({ type: 'UPDATE_FIELD', field: newState });
 
     }
@@ -298,7 +301,7 @@ export function FieldEditor({ field }) {
                     {field.type === 'nested' &&
                         <Grid container>
                             <Grid item xs={12}>
-                                <TextField required name="typeId" label="TypeId" value={field.typeId} onChange={(e) => handleUpdate(e)} />
+                                <TypeSelector name="typeId" value={field.typeId} onChange={(e) => handleUpdate(e)} />
                             </Grid>
                         </Grid>
                     }

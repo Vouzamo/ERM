@@ -134,3 +134,40 @@ export function AddFieldDialog({ field, open, onConfirm, onClose }) {
     );
 
 }
+
+export function SearchTypeDialog({ open, onClose, scope, onSubmit }) {
+
+    const [value, setValue] = useState('');
+
+    const handleSubmit = () => {
+
+        // search for value
+
+        onSubmit('GUID');
+
+    }
+
+    return (
+        <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
+            <DialogTitle id="form-dialog-title">Search Types</DialogTitle>
+            <DialogContent>
+                <DialogContentText>Search for type by name:</DialogContentText>
+                <TextField
+                    autoFocus
+                    required
+                    name="name"
+                    label="Name"
+                    type="text"
+                    fullWidth
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose} color="secondary">Cancel</Button>
+                <Button onClick={handleSubmit} color="primary">Confirm</Button>
+            </DialogActions>
+        </Dialog>
+    );
+
+}
