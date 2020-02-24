@@ -1,8 +1,10 @@
 ﻿import React, { useState } from 'react';
 import { useHistory } from "react-router-dom";
-import { makeStyles, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
+import { makeStyles, Typography, Backdrop, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, FormControl, InputLabel, TextField, Select, MenuItem, Button } from '@material-ui/core';
 import gql from 'graphql-tag';
 import { useMutation } from '@apollo/react-hooks';
+
+import { Search } from '../routes/types/Search';
 
 const useStyles = makeStyles(theme => ({
     backdrop: {
@@ -152,16 +154,9 @@ export function SearchTypeDialog({ open, onClose, scope, onSubmit }) {
             <DialogTitle id="form-dialog-title">Search Types</DialogTitle>
             <DialogContent>
                 <DialogContentText>Search for type by name:</DialogContentText>
-                <TextField
-                    autoFocus
-                    required
-                    name="name"
-                    label="Name"
-                    type="text"
-                    fullWidth
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                />
+                <Search>
+                    {(results) => results.map((result) => <Typography key={result.id}>{result.name}</Typography>)}
+                </Search>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="secondary">Cancel</Button>
