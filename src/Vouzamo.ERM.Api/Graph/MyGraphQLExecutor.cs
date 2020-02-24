@@ -22,7 +22,7 @@ namespace Vouzamo.ERM.Api.Graph
             
         } 
 
-        public override async Task<ExecutionResult> ExecuteAsync(string operationName, string query, Inputs variables, object context, CancellationToken cancellationToken = default)
+        public override async Task<ExecutionResult> ExecuteAsync(string operationName, string query, Inputs variables, IDictionary<string, object> context, CancellationToken cancellationToken = default)
         {
             var result = await base.ExecuteAsync(operationName, query, variables, context, cancellationToken);
 
@@ -31,14 +31,14 @@ namespace Vouzamo.ERM.Api.Graph
             return result;
         }
 
-        protected override ExecutionOptions GetOptions(string operationName, string query, Inputs variables, object context, CancellationToken cancellationToken)
+        protected override ExecutionOptions GetOptions(string operationName, string query, Inputs variables, IDictionary<string, object> context, CancellationToken cancellationToken)
         {
             var options = base.GetOptions(operationName, query, variables, context, cancellationToken);
 
             if (!options.ExposeExceptions)
             {
                 // Box Exceptions
-                options.FieldMiddleware.Use(next => {
+                options.FieldMiddleware.Use((schema, next) => {
                     return async context =>
                     {
                         try

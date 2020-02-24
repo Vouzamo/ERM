@@ -3,6 +3,7 @@ using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Server.Internal;
 using GraphQL.Server.Ui.Playground;
+using GraphQL.SystemTextJson;
 using GraphQL.Types;
 using GraphQL.Validation;
 using MediatR;
@@ -10,11 +11,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using System.Text.Json;
 using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
 using Vouzamo.ERM.Api.Handlers;
+using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Exceptions;
+using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Extensions
@@ -38,7 +42,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
         public static void AddGraph(this IServiceCollection services)
         {
-            services.AddSingleton<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            //services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+            //services.AddSingleton<IDocumentWriter, DocumentWriter>();
 
             services.AddHttpContextAccessor();
 
@@ -58,6 +63,17 @@ namespace Vouzamo.ERM.Api.Extensions
                 options.EnableMetrics = false;
                 options.ExposeExceptions = false;
             })
+            .AddSystemTextJson(
+                options => {
+                    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.Converters.Add(new ObjectToPrimitiveConverter());
+                    options.Converters.Add(new FieldConverter());
+                }, options => {
+                    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.Converters.Add(new ObjectToPrimitiveConverter());
+                    options.Converters.Add(new FieldConverter());
+                }
+             )
             .AddGraphTypes()
             .AddDataLoader()
             .AddWebSockets()
@@ -92,8 +108,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
             // Mediatr
             services.AddSingleton<IRequestHandler<ByIdQuery<Common.Type>, Common.Type>, ByIdQueryHandler<Common.Type>>();
-            services.AddSingleton<IRequestHandler<ByIdQuery<Common.Node>, Common.Node>, ByIdQueryHandler<Common.Node>>();
-            services.AddSingleton<IRequestHandler<ByIdQuery<Common.Edge>, Common.Edge>, ByIdQueryHandler<Common.Edge>>();
+            services.AddSingleton<IRequestHandler<ByIdQuery<Node>, Node>, ByIdQueryHandler<Node>>();
+            services.AddSingleton<IRequestHandler<ByIdQuery<Edge>, Edge>, ByIdQueryHandler<Edge>>();
         }
 
         public static void UseGraph(this IApplicationBuilder app)
@@ -109,7 +125,7 @@ namespace Vouzamo.ERM.Api.Extensions
             app.UseGraphQLPlayground(new GraphQLPlaygroundOptions());
         }
 
-        public static void AddException(this ResolveFieldContext context, Exception exception)
+        public static void AddException(this IResolveFieldContext context, Exception exception)
         {
             switch(exception)
             {

@@ -7,6 +7,8 @@ namespace Vouzamo.ERM.Api.Graph.Types
     {
         public BatchedResultsGraphType()
         {
+            Name = $"BatchedResults{typeof(TGraph).Name}";
+
             Field<ListGraphType<TGraph>>("results", resolve: context => context.Source.Results);
             Field(field => field.TotalCount);
             Field(field => field.Page);
