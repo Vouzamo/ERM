@@ -139,28 +139,17 @@ export function AddFieldDialog({ field, open, onConfirm, onClose }) {
 
 export function SearchTypeDialog({ open, onClose, scope, onSubmit }) {
 
-    const [value, setValue] = useState('');
-
-    const handleSubmit = () => {
-
-        // search for value
-
-        onSubmit('GUID');
-
-    }
-
     return (
         <Dialog open={open} onClose={onClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Search Types</DialogTitle>
             <DialogContent>
                 <DialogContentText>Search for type by name:</DialogContentText>
-                <Search>
-                    {(results) => results.map((result) => <Typography key={result.id}>{result.name}</Typography>)}
+                <Search scope={scope} size={5}>
+                    {(results) => results.map((result) => <Button key={result.id} onClick={() => { onSubmit(result.id); onClose(); }}>{result.name}</Button>)}
                 </Search>
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="secondary">Cancel</Button>
-                <Button onClick={handleSubmit} color="primary">Confirm</Button>
             </DialogActions>
         </Dialog>
     );

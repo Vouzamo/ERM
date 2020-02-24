@@ -27,31 +27,39 @@ const useStyles = makeStyles(theme => ({
 export function SearchRoute() {
 
     const classes = useStyles();
+    const [addOpen, setAddOpen] = useState(false);
 
     return (
-        <Search>
-            {(results) => results.map((result) => <TypeCard key={result.id} source={result} className={classes.card} />)}
-        </Search>
+        <>
+            <Typography>Types</Typography>
+
+            <Search>
+                {(results) => results.map((result) => <TypeCard key={result.id} source={result} className={classes.card} />)}
+            </Search>
+
+            <AddTypeDialog open={addOpen} onClose={() => setAddOpen(false)} />
+            <Fab className={classes.fab} color="primary" aria-label="add" onClick={() => setAddOpen(true)}>
+                <AddIcon />
+            </Fab>
+        </>
     );
 
 }
 
 
-export function Search({ children }) {
+export function Search({ children, scope, size }) {
 
     const { enqueueSnackbar } = useSnackbar();
     const classes = useStyles();
 
-    const [addOpen, setAddOpen] = useState(false);
-
-    const [query, setQuery] = useState("");
-    const [scope, setScope] = useState();
+    const [query, setQuery] = useState('');
+    const [scopeState, setScope] = useState(scope);
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(3);
+    const [sizeState, setSize] = useState(size ?? 10);
 
     const QUERY = gql`
-        query queryTypes($query: String!, $scope: TypeScope, $size: Int!, $page: Int) {
-            search: typeSearch(query: $query, scope: $scope, size: $size, page: $page) {
+        query queryTypes($query: String!, $scopeState: TypeScope, $sizeState: Int!, $page: Int) {
+            search: typeSearch(query: $query, scope: $scopeState, size: $sizeState, page: $page) {
                 totalCount
                 page
                 size
@@ -92,7 +100,7 @@ export function Search({ children }) {
 
     const { loading, error, data, refetch } = useQuery(QUERY,
         {
-            variables: { query, scope, size, page },
+            variables: { query, scopeState, sizeState, page },
         }
     );
 
@@ -110,29 +118,21 @@ export function Search({ children }) {
                 <CircularProgress color="inherit" />
             </Backdrop>
 
-            <Typography>Types</Typography>
-
             <input defaultValue={query} onBlur={handleChangeQuery} />
-            <select value={scope} onChange={handleChangeScope}>
+            <select value={scopeState} onChange={handleChangeScope}>
                 <option value="">Any</option>
                 <option value="NODES">Nodes</option>
                 <option value="EDGES">Edges</option>
-                <option value="BOTH">Both</option>
+                <option value="TYPES">Types</option>
             </select>
             <button onClick={() => refetch()}>Search</button>
 
             {data &&
                 <>
-                    <Pagination count={calculateTotalPages(size, data.search.totalCount)} page={page} onChange={handlePagination} />
+                    <Pagination count={calculateTotalPages(sizeState, data.search.totalCount)} page={page} onChange={handlePagination} />
                     <Grid>{children(data.search.results)}</Grid>
                 </>
             }
-
-            <AddTypeDialog open={addOpen} onClose={() => setAddOpen(false)} />
-
-            <Fab className={classes.fab} color="primary" aria-label="add" onClick={() => setAddOpen(true)}>
-                <AddIcon />
-            </Fab>
 
         </>
     );
