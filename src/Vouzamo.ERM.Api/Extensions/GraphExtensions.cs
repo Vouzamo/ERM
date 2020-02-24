@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
+using System.Text.Json;
 using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
 using Vouzamo.ERM.Api.Handlers;
 using Vouzamo.ERM.Common.Exceptions;
+using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.CQRS;
 
 namespace Vouzamo.ERM.Api.Extensions
@@ -39,8 +41,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
         public static void AddGraph(this IServiceCollection services)
         {
-            services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
-            services.AddSingleton<IDocumentWriter, DocumentWriter>();
+            //services.AddSingleton<IDocumentExecuter, DocumentExecuter>();
+            //services.AddSingleton<IDocumentWriter, DocumentWriter>();
 
             services.AddHttpContextAccessor();
 
@@ -60,6 +62,17 @@ namespace Vouzamo.ERM.Api.Extensions
                 options.EnableMetrics = false;
                 options.ExposeExceptions = false;
             })
+            .AddSystemTextJson(
+                options => {
+                    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.Converters.Add(new ObjectToPrimitiveConverter());
+                    options.Converters.Add(new FieldConverter());
+                }, options => {
+                    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    options.Converters.Add(new ObjectToPrimitiveConverter());
+                    options.Converters.Add(new FieldConverter());
+                }
+             )
             .AddGraphTypes()
             .AddDataLoader()
             .AddWebSockets()
