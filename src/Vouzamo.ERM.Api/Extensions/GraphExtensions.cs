@@ -16,6 +16,7 @@ using Vouzamo.ERM.Api.Graph;
 using Vouzamo.ERM.Api.Graph.Types;
 using Vouzamo.ERM.Api.Graph.Types.Fields;
 using Vouzamo.ERM.Api.Handlers;
+using Vouzamo.ERM.Common;
 using Vouzamo.ERM.Common.Exceptions;
 using Vouzamo.ERM.Common.Serialization;
 using Vouzamo.ERM.CQRS;
@@ -107,8 +108,8 @@ namespace Vouzamo.ERM.Api.Extensions
 
             // Mediatr
             services.AddSingleton<IRequestHandler<ByIdQuery<Common.Type>, Common.Type>, ByIdQueryHandler<Common.Type>>();
-            services.AddSingleton<IRequestHandler<ByIdQuery<Common.Node>, Common.Node>, ByIdQueryHandler<Common.Node>>();
-            services.AddSingleton<IRequestHandler<ByIdQuery<Common.Edge>, Common.Edge>, ByIdQueryHandler<Common.Edge>>();
+            services.AddSingleton<IRequestHandler<ByIdQuery<Node>, Node>, ByIdQueryHandler<Node>>();
+            services.AddSingleton<IRequestHandler<ByIdQuery<Edge>, Edge>, ByIdQueryHandler<Edge>>();
         }
 
         public static void UseGraph(this IApplicationBuilder app)
