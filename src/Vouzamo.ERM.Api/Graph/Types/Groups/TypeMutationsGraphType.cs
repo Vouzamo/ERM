@@ -49,6 +49,20 @@ namespace Vouzamo.ERM.Api.Graph.Types.Groups
             );
 
             FieldAsync<TypeGraphType>(
+                "updateType",
+                arguments: new QueryArguments(
+                    new QueryArgument<NonNullGraphType<JsonGraphType>> { Name = "type" }
+                ),
+                resolve: async context =>
+                {
+                    var raw = context.GetArgument<object>("type");
+                    var updated = converter.Convert<object, Common.Type>(raw);
+
+                    return await mediator.Send(new UpdateCommand<Common.Type>(updated));
+                }
+            );
+
+            FieldAsync<TypeGraphType>(
                 "updateFields",
                 arguments: new QueryArguments(
                     new QueryArgument<NonNullGraphType<IdGraphType>> { Name = "id" },

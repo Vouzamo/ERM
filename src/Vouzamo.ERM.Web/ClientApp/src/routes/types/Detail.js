@@ -1,8 +1,10 @@
 ﻿import React, { createContext, useReducer } from 'react';
+import { useSnackbar } from 'notistack';
 import { useParams } from 'react-router-dom';
 import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 import { Backdrop, CircularProgress, Button, makeStyles } from '@material-ui/core';
+import { Save as SaveIcon } from '@material-ui/icons';
 
 import { TypeEditor } from '../../components/Editors';
 
@@ -109,6 +111,30 @@ const Detail = () => {
         }
     `;
 
+    const FIELDS_MUTATION = gql`
+      mutation Update($id: ID! $fields: [Json]) {
+        types {
+            updateFields(id: $id, fields: $fields) {
+                id
+            }
+        }
+      }
+    `;
+
+    const TYPE_MUTATION = gql`
+      mutation Update($type: Json!) {
+        types {
+            updateType(type: $type) {
+                id
+            }
+        }
+      }
+    `;
+
+    const { enqueueSnackbar } = useSnackbar();
+    const [updateFields, { fieldsData }] = useMutation(FIELDS_MUTATION)
+    const [updateType, { typeData }] = useMutation(TYPE_MUTATION);
+
     const { loading, error, refetch } = useQuery(QUERY,
         {
             variables: { id },
@@ -117,6 +143,27 @@ const Detail = () => {
             }
         }
     );
+
+    const handleSaveFields = () => {
+
+        let id = state.data.id;
+        let fields = state.data.fields;
+
+        updateFields({ variables: { id, fields } })
+            .then(() => {
+                enqueueSnackbar('Changes saved successfully', { variant: 'success' });
+            })
+            .catch(error => enqueueSnackbar(error.message, { variant: 'error' }));
+    }
+
+    const handleSave = () => {
+
+        let type = state.data;
+
+        updateType({ variables: { type: type } })
+            .catch(error => console.log(error));
+
+    }
 
     if (error) {
 
@@ -134,6 +181,7 @@ const Detail = () => {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <TypeEditor />
+            <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={handleSaveFields}>Save Changes</Button>
         </TypeContext.Provider>
     );
 

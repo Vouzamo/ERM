@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Vouzamo.ERM.Common;
-using Vouzamo.ERM.Common.Extensions;
 using Vouzamo.ERM.Common.Models;
 using Vouzamo.ERM.CQRS.Extensions;
 

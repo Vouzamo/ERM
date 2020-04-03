@@ -2,6 +2,8 @@
 import { useSnackbar } from 'notistack';
 import { SortableContainer, SortableElement, SortableHandle } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
+import { useMutation } from '@apollo/react-hooks';
+import gql from 'graphql-tag';
 
 import { Container, Grid, makeStyles, ExpansionPanel, ExpansionPanelSummary, ExpansionPanelDetails, ExpansionPanelActions, Divider, Card, CardHeader, TextField, Typography, Tooltip, IconButton, Button, FormControl, FormControlLabel, InputLabel, Select, MenuItem, Slider, Switch } from '@material-ui/core';
 import { Add as AddIcon, Save as SaveIcon, Edit as EditIcon, Delete as DeleteIcon, ExpandMore as ExpandMoreIcon, Reorder as ReorderIcon, NewReleases as MandatoryIcon, List as EnumerableIcon, Language as LocalizableIcon } from '@material-ui/icons';
@@ -205,7 +207,6 @@ export function FieldsEditor() {
 
             <Grid className={classes.actions}>
                 <Button variant="contained" color="secondary" startIcon={<AddIcon />} onClick={() => dispatch({ type: 'SET_ADD_DIALOG', open: true })}>Add Field</Button>
-                <Button variant="contained" color="primary" startIcon={<SaveIcon />} onClick={() => alert(state)}>Save Changes</Button>
             </Grid>
 
         </Container>
@@ -222,8 +223,6 @@ export function FieldEditor({ field }) {
     const handleUpdate = (e) => {
 
         let newState = { ...field, [e.target.name]: e.target.value }
-
-        console.log(newState);
 
         dispatch({ type: 'UPDATE_FIELD', field: newState });
 
